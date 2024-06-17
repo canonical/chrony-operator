@@ -7,9 +7,6 @@ jobs:
   unit-tests:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@main
     secrets: inherit
-    with:
-      self-hosted-runner: true
-      self-hosted-runner-label: "edge"
 
   integration-tests:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
@@ -17,5 +14,3 @@ jobs:
     with:
       provider: lxd
       juju-channel: 3.3/stable
-      self-hosted-runner: true
-      self-hosted-runner-label: "edge"
