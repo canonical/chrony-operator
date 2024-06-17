@@ -40,6 +40,14 @@ config:
       default: ""
 
 bases:
-  - name: ubuntu
-    channel: "22.04"
-    architectures: [ amd64 ]
+  - build-on:
+      - name: ubuntu
+        channel: "22.04"
+        architectures: [ amd64 ]
+    run-on:
+      - name: ubuntu
+        channel: "24.04"
+        architectures: [ amd64 ]
+
+assumes:
+  - juju >= 3.3

@@ -28,14 +28,15 @@ class ChronyCharm(ops.CharmBase):
         """
         super().__init__(*args)
         self.chrony = Chrony()
-        self.framework.observe(self.on.install, self._on_install)
+        self.framework.observe(self.on.install, self._do_install)
+        self.framework.observe(self.on.upgrade_charm, self._do_install)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
 
-    def _on_install(self, _: ops.EventBase) -> None:
-        """Handle the "install" event."""
-        self.unit.open_port("udp", 123)
+    def _do_install(self, _: ops.EventBase) -> None:
+        """Install required packages and open NTP port."""
         self.unit.status = ops.MaintenanceStatus("installing chrony")
         self.chrony.install()
+        self.unit.open_port("udp", 123)
         self.unit.status = ops.ActiveStatus()
 
     def _get_time_sources(self) -> list[TimeSource]:
