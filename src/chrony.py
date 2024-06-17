@@ -214,7 +214,7 @@ class Chrony:
     @staticmethod
     def install() -> None:
         """Install the Chrony on the system."""
-        apt.add_package("chrony", update_cache=True)  # pragma: nocover
+        apt.add_package(["chrony", "ca-certificates"], update_cache=True)  # pragma: nocover
 
     def read_config(self) -> str:
         """Read the current chrony configuration file.
