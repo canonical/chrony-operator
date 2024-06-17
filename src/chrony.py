@@ -260,7 +260,7 @@ class Chrony:
         """Create a new chrony configuration object.
 
         Args:
-            sources (list): A list of time sources to be used by chrony.
+            sources: A list of time sources to be used by chrony.
 
         Returns:
             Chrony configuration object.
