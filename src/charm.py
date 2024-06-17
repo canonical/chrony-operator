@@ -37,21 +37,16 @@ class ChronyCharm(ops.CharmBase):
         self.unit.status = ops.MaintenanceStatus("installing chrony")
         self.chrony.install()
         self.unit.open_port("udp", 123)
-        self.unit.status = ops.ActiveStatus()
+        self.unit.status = ops.WaitingStatus("waiting for configuration")
 
     def _on_config_changed(self, _: ops.EventBase) -> None:
         """Handle the "config-changed" event."""
         sources = self._get_time_sources()
         if not sources:
-            status = ops.BlockedStatus("no time source configured")
-            self.unit.status = status
-            if self.unit.is_leader():
-                self.app.status = status
+            self.unit.status = ops.BlockedStatus("no time source configured")
             return
         self.chrony.new_config(sources=sources).apply()
         self.unit.status = ops.ActiveStatus()
-        if self.unit.is_leader():
-            self.app.status = ops.ActiveStatus()
 
     def _get_time_sources(self) -> list[TimeSource]:
         """Get time sources from charm configuration.

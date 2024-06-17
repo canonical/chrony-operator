@@ -24,6 +24,7 @@ async def test_ntp_server(get_unit_ips):
     """Test the functionality of the chrony charm as a NTP server."""
     unit_ips = await get_unit_ips()
     for unit_ip in unit_ips:
+        # construct a simple NTPv4 request
         ntp_request = b"\x23" + b"\x00" * 47
         ntp_sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         ntp_sock.sendto(ntp_request, (unit_ip, 123))
