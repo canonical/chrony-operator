@@ -31,9 +31,14 @@ TIME_SOURCE_URL_EXAMPLES = [
 ]
 
 
-@pytest.mark.parametrize("url,directory", TIME_SOURCE_URL_EXAMPLES)
-def test_parse_source_url(url: str, directory: str):
-    assert Chrony.parse_source_url(url).render() == directory
+@pytest.mark.parametrize("url,directive", TIME_SOURCE_URL_EXAMPLES)
+def test_parse_source_url(url: str, directive: str):
+    """
+    arrange: receive a list of URL and directory pairs for testing.
+    act: parse the source URL to get a configuration directive.
+    assert: confirm that the rendered directory matches the expected directive.
+    """
+    assert Chrony.parse_source_url(url).render() == directive
 
 
 INVALID_TIME_SOURCE_URL_EXAMPLES = [
@@ -46,11 +51,21 @@ INVALID_TIME_SOURCE_URL_EXAMPLES = [
 
 @pytest.mark.parametrize("url", INVALID_TIME_SOURCE_URL_EXAMPLES)
 def test_parse_invalid_source_url(url: str):
+    """
+    arrange: provide a list of invalid URL examples for parsing.
+    act: attempt to parse the source URL which should be invalid.
+    assert: expect a ValueError to be raised due to invalid URL format.
+    """
     with pytest.raises(ValueError):
         Chrony.parse_source_url(url)
 
 
 def test_render_chrony_config():
+    """
+    arrange: initialize Chrony object and parse time source URLs.
+    act: generate a new configuration from parsed URLs.
+    assert: verify that the rendered configuration matches the expected output.
+    """
     chrony = Chrony()
     sources = [chrony.parse_source_url(s) for s in ["ntp://example.com", "nts://nts.example.com"]]
     assert chrony.new_config(sources=sources).render() == textwrap.dedent(
