@@ -9,7 +9,6 @@ jobs:
     secrets: inherit
     with:
       self-hosted-runner: false
-      self-hosted-runner-label: "noble"
 
   integration-tests:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
