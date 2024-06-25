@@ -28,13 +28,27 @@ class ChronyCharm(ops.CharmBase):
         """
         super().__init__(*args)
         self.chrony = Chrony()
+        self.framework.observe(self.on.install, self._on_install)
+        self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
 
-    def _on_config_changed(self, _: ops.EventBase) -> None:
-        """Handle the "config-changed" event."""
+    def _on_install(self, _: ops.EventBase) -> None:
+        """Handle install event."""
+        self._do_install()
+
+    def _on_upgrade_charm(self, _: ops.EventBase) -> None:
+        """Handle upgrade-charm event."""
+        self._do_install()
+
+    def _do_install(self) -> None:
+        """Install required packages and open NTP port."""
         self.unit.status = ops.MaintenanceStatus("installing chrony")
         self.chrony.install()
         self.unit.open_port("udp", 123)
+        self.unit.status = ops.ActiveStatus()
+
+    def _on_config_changed(self, _: ops.EventBase) -> None:
+        """Handle the "config-changed" event."""
         sources = self._get_time_sources()
         if not sources:
             self.unit.status = ops.BlockedStatus("no time source configured")
