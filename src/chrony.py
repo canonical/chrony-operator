@@ -258,8 +258,7 @@ class Chrony:
 
     def _make_certs_dir(self) -> None:  # pragma: nocover
         """Create the chrony TLS certificates directory."""
-        self.CERTS_DIR.mkdir(exist_ok=True)
-        self.CERTS_DIR.chmod(0o700)
+        self.CERTS_DIR.mkdir(exist_ok=True, mode=0o700)
         shutil.chown(self.CERTS_DIR, "_chrony", "_chrony")
 
     def _iter_certs_dir(self) -> typing.Iterator[pathlib.Path]:
