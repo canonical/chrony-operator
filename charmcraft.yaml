@@ -23,6 +23,16 @@ type: charm
 
 config:
   options:
+    server-name:
+      description: >-
+        This configuration specifies the server name for the Chrony server. 
+        The charm will use this server name to request TLS certificates for enabling Network Time Security (NTS).
+        A wildcard certificate will be requests to cover all subdomains of this server name, 
+        allowing each unit to announce itself individually.
+        For instance, if "example.com" is provided as the server name, 
+        the charm will request a certificate with `DNS:*.example.com, DNS:example.com` as subject alternative names. 
+        IP addresses should not be used as the server name.
+      type: string
     sources:
       description: >-
         Time sources for the Chrony server are specified as a comma-separated list of URLs.
@@ -39,6 +49,11 @@ config:
       type: string
       default: ""
 
+requires:
+  certificates:
+    interface: tls-certificates
+    limit: 1
+
 bases:
   - build-on:
       - name: ubuntu
@@ -46,8 +61,17 @@ bases:
         architectures: [ amd64 ]
     run-on:
       - name: ubuntu
-        channel: "24.04"
+        channel: "22.04"
         architectures: [ amd64 ]
 
 assumes:
   - juju >= 3.3
+
+parts:
+  charm:
+    build-packages:
+      - cargo
+      - libffi-dev
+      - libssl-dev
+      - pkg-config
+      - rustc

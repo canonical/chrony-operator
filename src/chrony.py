@@ -3,8 +3,11 @@
 
 """Chrony controller."""
 
+import collections
+import itertools
 import logging
 import pathlib
+import shutil
 import textwrap
 import typing
 import urllib.parse
@@ -154,20 +157,28 @@ class _NtsSource(_PoolOptions):
 
 
 TimeSource = _NtpSource | _NtsSource
+TlsKeyPair = collections.namedtuple("TlsKeyPair", ["certificate", "key"])
 
 
 class _ChronyConfig:
     """Chrony configuration file control."""
 
-    def __init__(self, chrony: "Chrony", sources: list[TimeSource]) -> None:
+    def __init__(
+        self,
+        chrony: "Chrony",
+        sources: list[TimeSource],
+        tls_key_pairs: list[TlsKeyPair] | None = None,
+    ) -> None:
         """Initialize chrony configuration object.
 
         Args:
             chrony: Chrony controller.
             sources: List of chrony time sources.
+            tls_key_pairs: List of TLS key pairs.
         """
         self._chrony = chrony
         self._sources = sources
+        self._tls_key_pairs = tls_key_pairs if tls_key_pairs else []
 
     def render(self) -> str:
         """Generate the chrony configuration file content.
@@ -176,20 +187,30 @@ class _ChronyConfig:
             Generated chrony configuration file content.
         """
         sources = "\n".join(s.render() for s in self._sources)
-        return sources + textwrap.dedent(
-            """
-            bindcmdaddress 127.0.0.1
-            driftfile /var/lib/chrony/chrony.drift
-            ntsdumpdir /var/lib/chrony
-            logdir /var/log/chrony
-            maxupdateskew 100.0
-            rtcsync
-            makestep 1 3
-            leapsectz right/UTC
-            allow 0.0.0.0/0
-            allow ::/0
-            """
+        certs_lines = []
+        for idx, _ in enumerate(self._tls_key_pairs):
+            certs_lines.append(
+                "ntsservercert " + str((self._chrony.CERTS_DIR / f"{idx:04}.crt").absolute())
+            )
+            certs_lines.append(
+                "ntsserverkey " + str((self._chrony.CERTS_DIR / f"{idx:04}.key").absolute())
+            )
+        certs = "\n".join(certs_lines)
+        static = textwrap.dedent(
+            """\
+                bindcmdaddress 127.0.0.1
+                driftfile /var/lib/chrony/chrony.drift
+                ntsdumpdir /var/lib/chrony
+                logdir /var/log/chrony
+                maxupdateskew 100.0
+                rtcsync
+                makestep 1 3
+                leapsectz right/UTC
+                allow 0.0.0.0/0
+                allow ::/0
+                """
         )
+        return "\n\n".join(part for part in [sources, certs, static] if part)
 
     def apply(self) -> None:
         """Apply the new chrony configuration.
@@ -199,9 +220,11 @@ class _ChronyConfig:
         configuration file with the new settings and restarts the chrony service.
         """
         current_config = self._chrony.read_config()
+        current_certs = self._chrony.read_tls_key_pairs()
         new_config = self.render()
-        if new_config != current_config:
+        if new_config != current_config or current_certs != self._tls_key_pairs:
             logger.info("Chrony config changed, apply and restart chrony")
+            self._chrony.write_tls_key_pairs(self._tls_key_pairs)
             self._chrony.write_config(new_config)
             self._chrony.restart()
 
@@ -210,6 +233,7 @@ class Chrony:
     """Chrony service manager."""
 
     CONFIG_FILE = pathlib.Path("/etc/chrony/chrony.conf")
+    CERTS_DIR = pathlib.Path("/etc/chrony/certs")
 
     @staticmethod
     def install() -> None:
@@ -231,6 +255,115 @@ class Chrony:
             config: The new chrony configuration file content.
         """
         self.CONFIG_FILE.write_text(config, encoding="utf-8")  # pragma: nocover
+
+    def _make_certs_dir(self) -> None:  # pragma: nocover
+        """Create the chrony TLS certificates directory."""
+        self.CERTS_DIR.mkdir(exist_ok=True)
+        self.CERTS_DIR.chmod(0o700)
+        shutil.chown(self.CERTS_DIR, "_chrony", "_chrony")
+
+    def _iter_certs_dir(self) -> typing.Iterator[pathlib.Path]:
+        """Iterate over all certificate files in the certificate directory.
+
+        Returns:
+            An iterator over the paths of the certificate files.
+        """
+        return self.CERTS_DIR.iterdir()  # pragma: nocover
+
+    @staticmethod
+    def _write_certs_file(path: pathlib.Path, content: str) -> None:  # pragma: nocover
+        """Write content of a certificate file and set appropriate permissions and ownership.
+
+        Args:
+            path: The path to the certificate file.
+            content: The content to write to the file.
+        """
+        path.write_text(content, encoding="utf-8")
+        path.chmod(0o600)
+        shutil.chown(path, "_chrony", "_chrony")
+
+    @staticmethod
+    def _read_certs_file(path: pathlib.Path) -> str:
+        """Read and return the content of a certificate file.
+
+        Args:
+            path: The path to the certificate file.
+
+        Returns:
+            The content of the certificate file as a string.
+        """
+        return path.read_text(encoding="utf-8")  # pragma: nocover
+
+    @staticmethod
+    def _unlink_certs_file(path: pathlib.Path) -> None:
+        """Unlink (delete) a certificate file.
+
+        Args:
+            path: The path to the certificate file to delete.
+        """
+        path.unlink()  # pragma: nocover
+
+    @staticmethod
+    def batched(iterable: typing.Iterable, n: int) -> typing.Iterable:  # pragma: nocover
+        """Replace itertools.batched.
+
+        Args:
+            iterable: The iterable to batch.
+            n: The number of items per batch.
+
+        Yields:
+            Tuples containing up to n items from the iterable.
+        """
+        # replace this with itertools.batched once 24.04 is supported by juju
+        iterator = iter(iterable)
+        while batch := tuple(itertools.islice(iterator, n)):
+            yield batch
+
+    def read_tls_key_pairs(self) -> list[TlsKeyPair]:
+        """Read TLS key pairs from the certificates directory.
+
+        Returns:
+            A list of TlsKeyPair objects.
+        """
+        self._make_certs_dir()
+        files = sorted(self._iter_certs_dir())
+        key_pairs = []
+        for crt, key in self.batched(files, 2):
+            key_pairs.append(
+                TlsKeyPair(
+                    certificate=self._read_certs_file(crt),
+                    key=self._read_certs_file(key),
+                )
+            )
+        return key_pairs
+
+    def write_tls_key_pairs(self, key_pairs: list[TlsKeyPair]) -> None:
+        """Write TLS key pairs to the certificates directory.
+
+        Existing pairs are overwritten, and if more files exist than new key pairs provided,
+        the excess files are removed.
+
+        Args:
+            key_pairs: A list of TlsKeyPair objects to write.
+        """
+        self._make_certs_dir()
+        files = sorted(self._iter_certs_dir())
+        for idx, (key_pair_files, key_pair) in enumerate(
+            itertools.zip_longest(self.batched(files, 2), key_pairs)
+        ):
+            if key_pair_files is None:
+                self._write_certs_file(self.CERTS_DIR / f"{idx:04}.crt", key_pair.certificate)
+                self._write_certs_file(self.CERTS_DIR / f"{idx:04}.key", key_pair.key)
+                continue
+            if key_pair is None:
+                for file in key_pair_files:
+                    self._unlink_certs_file(file)
+                continue
+            crt_file, key_file = key_pair_files
+            if self._read_certs_file(crt_file) != key_pair.certificate:
+                self._write_certs_file(crt_file, key_pair.certificate)
+            if self._read_certs_file(key_file) != key_pair.key:
+                self._write_certs_file(key_file, key_pair.key)
 
     @staticmethod
     def restart() -> None:
@@ -256,11 +389,17 @@ class Chrony:
             return _NtsSource.from_source_url(url)
         raise ValueError(f"Invalid time source URL: {url}")
 
-    def new_config(self, *, sources: list[TimeSource]) -> _ChronyConfig:
+    def new_config(
+        self,
+        *,
+        sources: list[TimeSource],
+        tls_key_pairs: list[TlsKeyPair] | None = None,
+    ) -> _ChronyConfig:
         """Create a new chrony configuration object.
 
         Args:
             sources: A list of time sources to be used by chrony.
+            tls_key_pairs: The TLS credentials to use to enable NTS.
 
         Returns:
             Chrony configuration object.
@@ -270,4 +409,4 @@ class Chrony:
         """
         if not sources:
             raise ValueError("No time sources provided")
-        return _ChronyConfig(chrony=self, sources=sources)
+        return _ChronyConfig(chrony=self, sources=sources, tls_key_pairs=tls_key_pairs)

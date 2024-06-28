@@ -1,2 +1,4 @@
 ops==2.14.0
 pydantic==2.7.4
+cryptography==42.0.8
+jsonschema==4.22.0

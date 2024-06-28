@@ -26,6 +26,15 @@ async def chrony_app(
     return charm
 
 
+@pytest_asyncio.fixture(scope="module")
+async def self_signed_certificates_app(ops_test: OpsTest) -> juju.application.Application:
+    """Build and deploy the self-signed-certificates charm in the testing model."""
+    assert ops_test.model
+    charm = await ops_test.model.deploy("self-signed-certificates")
+    await ops_test.model.wait_for_idle(timeout=900)
+    return charm
+
+
 @pytest_asyncio.fixture
 async def get_unit_ips(ops_test: OpsTest):
     """A function to get unit ips of a charm application."""
