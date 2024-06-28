@@ -277,8 +277,8 @@ class Chrony:
             path: The path to the certificate file.
             content: The content to write to the file.
         """
+        path.touch(mode=0o600, exist_ok=True)
         path.write_text(content, encoding="utf-8")
-        path.chmod(0o600)
         shutil.chown(path, "_chrony", "_chrony")
 
     @staticmethod
