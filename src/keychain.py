@@ -19,13 +19,24 @@ class TlsKeychain:
 
     STORAGE_DIR = pathlib.Path("/var/lib/chrony-operator/tls-keychain")
 
-    def __init__(self, charm: ops.CharmBase) -> None:
+    def __init__(self, charm: ops.CharmBase, namespace: str) -> None:
         """Initialize the TlsKeychain.
 
         Args:
             charm: An instance of ops.CharmBase.
+            namespace: The storage namespace.
         """
         self._charm = charm
+        self._namespace = namespace
+
+    @property
+    def _storage_dir(self) -> pathlib.Path:
+        """Get the namespaced storage directory.
+
+        Returns:
+            The namespaced storage directory.
+        """
+        return self.STORAGE_DIR / self._namespace
 
     def _get_file_content(self, filename: str) -> str | None:
         """Retrieve the content of a specified file from keychain storage if it exists.
@@ -36,7 +47,7 @@ class TlsKeychain:
         Returns:
             The content of the file as a string or None if the file does not exist.
         """
-        file = self.STORAGE_DIR / filename
+        file = self._storage_dir / filename
         if file.exists():
             return file.read_text(encoding="utf-8")
         return None
@@ -55,8 +66,8 @@ class TlsKeychain:
         Args:
             private_key: The private key as a string to store.
         """
-        self.STORAGE_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
-        (self.STORAGE_DIR / "private-key.pem").write_text(private_key, encoding="utf-8")
+        self._storage_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        (self._storage_dir / "private-key.pem").write_text(private_key, encoding="utf-8")
 
     def get_server_name(self) -> str | None:
         """Retrieve the server name from the storage.
@@ -72,8 +83,8 @@ class TlsKeychain:
         Args:
             server_name: The server name as a string to store.
         """
-        self.STORAGE_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
-        (self.STORAGE_DIR / "server-name").write_text(server_name, encoding="utf-8")
+        self._storage_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        (self._storage_dir / "server-name").write_text(server_name, encoding="utf-8")
 
     def get_csr(self) -> str | None:
         """Retrieve the certificate signing request (CSR) from the storage.
@@ -89,8 +100,8 @@ class TlsKeychain:
         Args:
             csr: The CSR as a string to store.
         """
-        self.STORAGE_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
-        (self.STORAGE_DIR / "csr.pem").write_text(csr, encoding="utf-8")
+        self._storage_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        (self._storage_dir / "csr.pem").write_text(csr, encoding="utf-8")
 
     def get_chain(self) -> str | None:
         """Retrieve the certificate chain from the storage.
@@ -106,8 +117,8 @@ class TlsKeychain:
         Args:
             chain: The certificate chain as a string to store.
         """
-        self.STORAGE_DIR.mkdir(parents=True, exist_ok=True, mode=0o700)
-        (self.STORAGE_DIR / "chain.pem").write_text(chain, encoding="utf-8")
+        self._storage_dir.mkdir(parents=True, exist_ok=True, mode=0o700)
+        (self._storage_dir / "chain.pem").write_text(chain, encoding="utf-8")
 
     def get_key_pairs(self) -> list[TlsKeyPair]:
         """Retrieve a list of TLS key pairs from the storage.
@@ -123,6 +134,6 @@ class TlsKeychain:
 
     def clear(self) -> None:
         """Clear all stored TLS key materials from the storage directory."""
-        (self.STORAGE_DIR / "server-name").unlink(missing_ok=True)
-        (self.STORAGE_DIR / "chain.pem").unlink(missing_ok=True)
-        (self.STORAGE_DIR / "csr.pem").unlink(missing_ok=True)
+        (self._storage_dir / "server-name").unlink(missing_ok=True)
+        (self._storage_dir / "chain.pem").unlink(missing_ok=True)
+        (self._storage_dir / "csr.pem").unlink(missing_ok=True)

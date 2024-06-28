@@ -31,7 +31,7 @@ class ChronyCharm(ops.CharmBase):
         super().__init__(*args)
         self.chrony = Chrony()
         self.certificates = tls_certificates.TLSCertificatesRequiresV3(self, "certificates")
-        self.tls_keychain = TlsKeychain(charm=self)
+        self.tls_keychain = TlsKeychain(charm=self, namespace="certificates")
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
