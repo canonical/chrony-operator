@@ -14,5 +14,6 @@ jobs:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
     secrets: inherit
     with:
+      charmcraft-channel: latest/edge
       provider: lxd
       juju-channel: 3.3/stable
