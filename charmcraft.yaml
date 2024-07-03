@@ -42,7 +42,8 @@ config:
 base: ubuntu@24.04
 build-base: ubuntu@24.04
 platforms:
-  amd64: { }
-parts: { }
+  amd64:
+parts:
+  charm: {}
 assumes:
   - juju >= 3.3
