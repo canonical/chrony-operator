@@ -39,25 +39,23 @@ class ChronyCharm(ops.CharmBase):
             self.on.certificates_relation_created, self._on_certificates_relation_created
         )
         self.framework.observe(
-            self.on.certificates_relation_created, self._on_certificate_unavailable
-        )
-        self.framework.observe(
             self.on.certificates_relation_broken, self._on_certificates_relation_broken
         )
         self.framework.observe(
             self.certificates.on.certificate_available, self._on_certificate_available
         )
         self.framework.observe(
-            self.certificates.on.certificate_expiring, self._on_certificate_unavailable
+            self.certificates.on.certificate_expiring, self._on_certificate_expiring
         )
         self.framework.observe(
-            self.certificates.on.certificate_invalidated, self._on_certificate_unavailable
+            self.certificates.on.certificate_invalidated, self._on_certificate_invalidated
         )
 
     def _on_certificates_relation_created(self, _: ops.RelationCreatedEvent) -> None:
         """Handle the certificates relation-creation event."""
         if self.unit.is_leader():
             self.unit.open_port("tcp", 4460)
+        self._do_renew_certificate()
 
     def _on_certificates_relation_broken(self, _: ops.RelationBrokenEvent) -> None:
         """Handle the certificates relation-broken event."""
@@ -66,7 +64,15 @@ class ChronyCharm(ops.CharmBase):
         self.tls_keychain.clear()
         self._do_config()
 
-    def _on_certificate_unavailable(self, _: ops.CharmEvents) -> None:
+    def _on_certificate_expiring(self, _: ops.EventBase) -> None:
+        """Handle the certificates expiring event."""
+        self._do_renew_certificate()
+
+    def _on_certificate_invalidated(self, _: ops.EventBase) -> None:
+        """Handle the certificates invalidated event."""
+        self._do_renew_certificate()
+
+    def _do_renew_certificate(self) -> None:
         """Handle the event when certificate is unavailable."""
         if not self._get_server_name():
             return

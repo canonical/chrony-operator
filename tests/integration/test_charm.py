@@ -43,7 +43,7 @@ async def test_ntp_server(get_unit_ips):
 
 async def test_tls_certificates(chrony_app, self_signed_certificates_app, get_unit_ips, ops_test):
     """
-    arrange: relate a self-signed certificate is generated.
+    arrange: relate with self-signed-certificate application.
     act: update chrony charm config to use different server names.
     assert: confirm that the SANs in the retrieved certificates match configured server name.
     """

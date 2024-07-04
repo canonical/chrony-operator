@@ -29,29 +29,6 @@ class TlsKeychain:
         self._charm = charm
         self._namespace = namespace
 
-    @property
-    def _storage_dir(self) -> pathlib.Path:
-        """Get the namespaced storage directory.
-
-        Returns:
-            The namespaced storage directory.
-        """
-        return self.STORAGE_DIR / self._namespace
-
-    def _get_file_content(self, filename: str) -> str | None:
-        """Retrieve the content of a specified file from keychain storage if it exists.
-
-        Args:
-            filename: The name of the file to retrieve.
-
-        Returns:
-            The content of the file as a string or None if the file does not exist.
-        """
-        file = self._storage_dir / filename
-        if file.exists():
-            return file.read_text(encoding="utf-8")
-        return None
-
     def get_private_key(self) -> str | None:
         """Retrieve the private key from the storage.
 
@@ -137,3 +114,26 @@ class TlsKeychain:
         (self._storage_dir / "server-name").unlink(missing_ok=True)
         (self._storage_dir / "chain.pem").unlink(missing_ok=True)
         (self._storage_dir / "csr.pem").unlink(missing_ok=True)
+
+    def _get_file_content(self, filename: str) -> str | None:
+        """Retrieve the content of a specified file from keychain storage if it exists.
+
+        Args:
+            filename: The name of the file to retrieve.
+
+        Returns:
+            The content of the file as a string or None if the file does not exist.
+        """
+        file = self._storage_dir / filename
+        if file.exists():
+            return file.read_text(encoding="utf-8")
+        return None
+
+    @property
+    def _storage_dir(self) -> pathlib.Path:
+        """Get the namespaced storage directory.
+
+        Returns:
+            The namespaced storage directory.
+        """
+        return self.STORAGE_DIR / self._namespace
