@@ -62,7 +62,7 @@ class ChronyCharm(ops.CharmBase):
         if self.unit.is_leader():
             self.unit.close_port("tcp", 4460)
         self.tls_keychain.clear()
-        self._do_config()
+        self._configure_chrony()
 
     def _on_certificate_expiring(self, _: ops.EventBase) -> None:
         """Handle the certificates expiring event."""
@@ -85,7 +85,7 @@ class ChronyCharm(ops.CharmBase):
             event: certificate-available event object.
         """
         self.tls_keychain.set_chain(event.chain_as_pem())
-        self._do_config()
+        self._configure_chrony()
 
     def _renew_certificate(self) -> None:
         """Renew the certificate.
@@ -151,14 +151,14 @@ class ChronyCharm(ops.CharmBase):
                 or self.tls_keychain.get_server_name() != self._get_server_name()
             )
         ):
-            self._do_config()
+            self._configure_chrony()
             self._renew_certificate()
             return
         if not self._get_server_name() and self.tls_keychain.get_private_key():
             self._revoke_certificate()
-        self._do_config()
+        self._configure_chrony()
 
-    def _do_config(self) -> None:
+    def _configure_chrony(self) -> None:
         """Configure chrony."""
         sources = self._get_time_sources()
         if not sources:
