@@ -51,7 +51,7 @@ config:
     nts-certificates:
       descriptions: >-
         A comma-separated list of juju secret IDs for enabling NTS with. 
-        Each juju secret ID should start with `secret:`. 
+        Each juju secret ID must be a juju secret URI (i.e. start with `secret:`). 
         The secret must include two fields: the `cert` field, which contains the PEM-encoded TLS certificate, 
         and the `key` field, which contains an unencrypted PEM-encoded TLS key. 
         You can create and grant access to the secret using the `juju add-secret` and `juju grant-secret` commands.
