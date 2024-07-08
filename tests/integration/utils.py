@@ -3,13 +3,70 @@
 
 """Integration test utils."""
 
+import collections
+import datetime
 import socket
 import ssl
 import typing
 
+import cryptography.hazmat.primitives.asymmetric.ec
+import cryptography.hazmat.primitives.hashes
+import cryptography.hazmat.primitives.serialization
 import cryptography.x509
+import cryptography.x509.oid
 
-__all__ = ["get_tls_certificates", "get_sans"]
+
+def gen_tls_certificate(server_name: str):
+    """Generate a TLS certificate."""
+    private_key = cryptography.hazmat.primitives.asymmetric.ec.generate_private_key(
+        cryptography.hazmat.primitives.asymmetric.ec.SECP256R1()
+    )
+    certificate = (
+        cryptography.x509.CertificateBuilder()
+        .subject_name(
+            cryptography.x509.Name(
+                [
+                    cryptography.x509.NameAttribute(
+                        cryptography.x509.oid.NameOID.COMMON_NAME, server_name
+                    )
+                ]
+            )
+        )
+        .issuer_name(
+            cryptography.x509.Name(
+                [
+                    cryptography.x509.NameAttribute(
+                        cryptography.x509.oid.NameOID.COMMON_NAME, server_name
+                    )
+                ]
+            )
+        )
+        .public_key(private_key.public_key())
+        .serial_number(cryptography.x509.random_serial_number())
+        .not_valid_before(datetime.datetime(1950, 1, 1, tzinfo=datetime.timezone.utc))
+        .not_valid_after(datetime.datetime(2950, 1, 1, tzinfo=datetime.timezone.utc))
+        .add_extension(
+            cryptography.x509.SubjectAlternativeName([cryptography.x509.DNSName(server_name)]),
+            critical=False,
+        )
+        .sign(private_key, cryptography.hazmat.primitives.hashes.SHA256())
+    )
+    cert_pem = certificate.public_bytes(
+        cryptography.hazmat.primitives.serialization.Encoding.PEM
+    ).decode("ascii")
+    key_pem = private_key.private_bytes(
+        cryptography.hazmat.primitives.serialization.Encoding.PEM,
+        cryptography.hazmat.primitives.serialization.PrivateFormat.PKCS8,
+        cryptography.hazmat.primitives.serialization.NoEncryption(),
+    ).decode("ascii")
+    Certificate = collections.namedtuple("Certificate", "server_name cert cert_pem key key_pem")
+    return Certificate(
+        server_name=server_name,
+        cert=certificate,
+        cert_pem=cert_pem,
+        key=private_key,
+        key_pem=key_pem,
+    )
 
 
 def get_tls_certificates(

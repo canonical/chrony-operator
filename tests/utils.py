@@ -52,29 +52,6 @@ TEST_CA_CERT = cryptography.x509.load_pem_x509_certificate(
     ).encode("ascii")
 )
 
-TEST_KEY_PEM = """\
------BEGIN EC PRIVATE KEY-----
-MHcCAQEEIDJNJc0Waah56SZGaix4ohuGNq3JWAnELeDmTHtAVhu1oAoGCCqGSM49
-AwEHoUQDQgAEhc7Ms3dFl+0B2V8lzj+d3ccRFIJtczHdyl2zvdmaGxPDwaeuCFtN
-Q6mrp9tCDC2Xgvnz2RsFgkoBe2DJJJ314Q==
------END EC PRIVATE KEY-----
-"""
-
-TEST_CERT_PEM = """\
------BEGIN CERTIFICATE-----
-MIIBVzCB/qADAgECAhQabfYp6Vrx1Ettn6UT8ZoqdDoQMDAKBggqhkjOPQQDAjAW
-MRQwEgYDVQQDDAtleGFtcGxlLm9yZzAgFw01MDAxMDEwMDAwMDBaGA80MDAwMDEw
-MTAwMDAwMFowFjEUMBIGA1UEAwwLZXhhbXBsZS5vcmcwWTATBgcqhkjOPQIBBggq
-hkjOPQMBBwNCAASFzsyzd0WX7QHZXyXOP53dxxEUgm1zMd3KXbO92ZobE8PBp64I
-W01Dqaun20IMLZeC+fPZGwWCSgF7YMkknfXhoygwJjAWBgNVHREEDzANggtleGFt
-cGxlLm9yZzAMBgNVHRMBAf8EAjAAMAoGCCqGSM49BAMCA0gAMEUCIQCLomaxeDCK
-1W9UruA7oRnq5XwxyZ6ylVyMOVysMFHeOAIgB80Jm/PGnN1+1ezINYe0ze5m1lZw
-2dqWnx4GgL0LHe4=
------END CERTIFICATE-----
-"""
-
-TEST_CERT = cryptography.x509.load_pem_x509_certificate(TEST_CERT_PEM.encode("ascii"))
-
 
 def sign_csr(csr: bytes | str) -> str:
     """Sign a CSR with the TEST_CA_CERT."""

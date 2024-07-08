@@ -9,8 +9,12 @@ import ssl
 
 import pytest
 
-from tests.integration.utils import get_common_name, get_sans, get_tls_certificates
-from tests.utils import TEST_CERT, TEST_CERT_PEM, TEST_KEY_PEM
+from tests.integration.utils import (
+    gen_tls_certificate,
+    get_common_name,
+    get_sans,
+    get_tls_certificates,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -76,15 +80,27 @@ async def test_nts_certificates_configuration(chrony_app, get_unit_ips, ops_test
     act: update chrony charm config to use a user supplied TLS certificate.
     assert: confirm that the SANs in the retrieved certificates match configured server name.
     """
+    cert = gen_tls_certificate("config.test.net")
     secret_id = await ops_test.model.add_secret(
-        name="test-cert", data_args=[f"cert={TEST_CERT_PEM}", f"key={TEST_KEY_PEM}"]
+        name="test-cert", data_args=[f"cert={cert.cert_pem}", f"key={cert.key_pem}"]
     )
     secret_id = secret_id.strip()
     await ops_test.model.grant_secret("test-cert", chrony_app.name)
     await chrony_app.set_config({"nts-certificates": secret_id, "sources": "ntp://ntp.ubuntu.com"})
     await ops_test.model.wait_for_idle(status="active")
     for unit_ip in await get_unit_ips():
-        cert = get_tls_certificates(
-            unit_ip, cadata=TEST_CERT_PEM, server_name=get_common_name(TEST_CERT)
+        remote_cert = get_tls_certificates(
+            unit_ip, cadata=cert.cert_pem, server_name=cert.server_name
         )
-        assert sorted(get_sans(cert)) == sorted(get_sans(TEST_CERT))
+        assert get_sans(remote_cert) == [cert.server_name]
+
+    cert = gen_tls_certificate("config.test.org")
+    await ops_test.model.update_secret(
+        name="test-cert", data_args=[f"cert={cert.cert_pem}", f"key={cert.key_pem}"]
+    )
+    await ops_test.model.wait_for_idle(status="active")
+    for unit_ip in await get_unit_ips():
+        remote_cert = get_tls_certificates(
+            unit_ip, cadata=cert.cert_pem, server_name=cert.server_name
+        )
+        assert get_sans(remote_cert) == [cert.server_name]
