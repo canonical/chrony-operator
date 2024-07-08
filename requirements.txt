@@ -1,4 +1,4 @@
 cryptography==42.0.8
 jsonschema==4.22.0
 ops==2.14.1
-pydantic==2.8.0
+pydantic==2.8.2
