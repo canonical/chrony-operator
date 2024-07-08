@@ -35,6 +35,7 @@ class ChronyCharm(ops.CharmBase):
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
+        self.framework.observe(self.on.secret_changed, self._on_secret_changed)
         self.framework.observe(
             self.on.nts_certificates_relation_created, self._on_certificates_relation_created
         )
@@ -157,6 +158,17 @@ class ChronyCharm(ops.CharmBase):
         if not self._get_server_name() and self.tls_keychain.get_private_key():
             self._revoke_certificate()
         self._configure_chrony()
+
+    def _on_secret_changed(self, event: ops.SecretChangedEvent) -> None:
+        """Handle the "secret-changed" event for nts-certificates charm configuration.
+
+        Args:
+            event: secret-changed event object.
+        """
+        if typing.cast(str, event.secret.id) in typing.cast(
+            str, self.config.get("nts-certificates")
+        ):
+            self._configure_chrony()
 
     def _configure_chrony(self) -> None:
         """Configure chrony."""

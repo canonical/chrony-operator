@@ -46,6 +46,17 @@ class Helper:
             )
         }
 
+    def get_revoked_remote_app_data(self):
+        """Get simulated remote app data for nts-certificates integration when provider revoked
+        provided certificates.
+        """
+        data = self.get_remote_app_data()
+        return {
+            "certificates": json.dumps(
+                [{"revoked": True, **cert} for cert in json.loads(data["certificates"])]
+            )
+        }
+
     def get_remote_app_data(self):
         """Get simulated remote app data for nts-certificates integration."""
         return {
@@ -58,17 +69,6 @@ class Helper:
                         "certificate": self.cert,
                     }
                 ]
-            )
-        }
-
-    def get_revoked_remote_app_data(self):
-        """Get simulated remote app data for nts-certificates integration when provider revoked
-        provided certificates.
-        """
-        data = self.get_remote_app_data()
-        return {
-            "certificates": json.dumps(
-                [{"revoked": True, **cert} for cert in json.loads(data["certificates"])]
             )
         }
 
