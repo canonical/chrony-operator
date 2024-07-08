@@ -35,3 +35,10 @@ def get_sans(certificate: cryptography.x509.Certificate) -> list[str]:
         cryptography.x509.oid.ExtensionOID.SUBJECT_ALTERNATIVE_NAME
     )
     return san_extension.value.get_values_for_type(cryptography.x509.DNSName)  # type: ignore
+
+
+def get_common_name(certificate: cryptography.x509.Certificate) -> str:
+    """Extract the common name from a given X.509 certificate subject."""
+    subject = certificate.subject
+    common_name_oid = cryptography.x509.oid.NameOID.COMMON_NAME
+    return subject.get_attributes_for_oid(common_name_oid)[0].value  # type: ignore

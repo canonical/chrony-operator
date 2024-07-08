@@ -13,7 +13,7 @@ import typing
 import ops
 from charms.tls_certificates_interface.v3 import tls_certificates
 
-from chrony import Chrony, TimeSource
+from chrony import Chrony, TimeSource, TlsKeyPair
 from keychain import TlsKeychain
 
 logger = logging.getLogger(__name__)
@@ -30,16 +30,16 @@ class ChronyCharm(ops.CharmBase):
         """
         super().__init__(*args)
         self.chrony = Chrony()
-        self.certificates = tls_certificates.TLSCertificatesRequiresV3(self, "certificates")
-        self.tls_keychain = TlsKeychain(charm=self, namespace="certificates")
+        self.certificates = tls_certificates.TLSCertificatesRequiresV3(self, "nts-certificates")
+        self.tls_keychain = TlsKeychain(namespace="nts-certificates")
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
         self.framework.observe(
-            self.on.certificates_relation_created, self._on_certificates_relation_created
+            self.on.nts_certificates_relation_created, self._on_certificates_relation_created
         )
         self.framework.observe(
-            self.on.certificates_relation_broken, self._on_certificates_relation_broken
+            self.on.nts_certificates_relation_broken, self._on_certificates_relation_broken
         )
         self.framework.observe(
             self.certificates.on.certificate_available, self._on_certificate_available
@@ -84,7 +84,7 @@ class ChronyCharm(ops.CharmBase):
         Args:
             event: certificate-available event object.
         """
-        self.tls_keychain.set_chain(event.chain_as_pem())
+        self.tls_keychain.set_chain(event.chain_as_pem().strip())
         self._configure_chrony()
 
     def _renew_certificate(self) -> None:
@@ -112,7 +112,7 @@ class ChronyCharm(ops.CharmBase):
                 new_certificate_signing_request=new_csr,
             )
         self.tls_keychain.set_server_name(self._get_server_name())
-        self.tls_keychain.set_csr(new_csr.decode(encoding="ascii"))
+        self.tls_keychain.set_csr(new_csr.decode(encoding="ascii").strip())
         self.unit.status = ops.WaitingStatus("Waiting for new certificate")
 
     def _revoke_certificate(self) -> None:
@@ -137,7 +137,7 @@ class ChronyCharm(ops.CharmBase):
         self.unit.open_port("udp", 123)
         if not self.tls_keychain.get_private_key():
             self.tls_keychain.set_private_key(
-                tls_certificates.generate_private_key().decode("ascii")
+                tls_certificates.generate_private_key().decode("ascii").strip()
             )
         self.unit.status = ops.ActiveStatus()
 
@@ -145,7 +145,7 @@ class ChronyCharm(ops.CharmBase):
         """Handle the "config-changed" event."""
         if (
             self._get_server_name()
-            and self.model.get_relation("certificates")
+            and self.model.get_relation("nts-certificates")
             and (
                 not self.tls_keychain.get_key_pairs()
                 or self.tls_keychain.get_server_name() != self._get_server_name()
@@ -164,9 +164,7 @@ class ChronyCharm(ops.CharmBase):
         if not sources:
             self.unit.status = ops.BlockedStatus("no time source configured")
             return
-        self.chrony.new_config(
-            sources=sources, tls_key_pairs=self.tls_keychain.get_key_pairs()
-        ).apply()
+        self.chrony.new_config(sources=sources, tls_key_pairs=self._get_nts_certificates()).apply()
         self.unit.status = ops.ActiveStatus()
 
     def _get_server_name(self) -> str | None:
@@ -187,6 +185,23 @@ class ChronyCharm(ops.CharmBase):
         return [
             self.chrony.parse_source_url(url.strip()) for url in urls.split(",") if url.strip()
         ]
+
+    def _get_nts_certificates(self) -> list[TlsKeyPair]:
+        """Get TLS certificates for NTS from charm configuration and tls-certificate integration.
+
+        Returns:
+            A list of TlsKeyPair objects.
+        """
+        certs = []
+        for secret_id in typing.cast(str, self.config.get("nts-certificates")).split(","):
+            secret_id = secret_id.strip()
+            if not secret_id:
+                continue
+            secret = self.model.get_secret(id=secret_id)
+            secret_value = secret.get_content(refresh=True)
+            certs.append(TlsKeyPair(certificate=secret_value["cert"], key=secret_value["key"]))
+        certs.extend(self.tls_keychain.get_key_pairs())
+        return certs
 
 
 if __name__ == "__main__":  # pragma: nocover

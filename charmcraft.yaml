@@ -48,25 +48,21 @@ config:
         `nts://ntp.example.com`
       type: string
       default: ""
+    nts-certificates:
+      descriptions: >-
+        ...
+      type: string
+      default: ""
 
 requires:
-  certificates:
+  nts-certificates:
     interface: tls-certificates
     limit: 1
 
-bases:
-  - build-on:
-      - name: ubuntu
-        channel: "22.04"
-        architectures: [ amd64 ]
-    run-on:
-      - name: ubuntu
-        channel: "24.04"
-        architectures: [ amd64 ]
-
-assumes:
-  - juju >= 3.3
-
+base: ubuntu@24.04
+build-base: ubuntu@24.04
+platforms:
+  amd64:
 parts:
   charm:
     build-packages:
@@ -75,3 +71,6 @@ parts:
       - libssl-dev
       - pkg-config
       - rustc
+
+assumes:
+  - juju >= 3.3

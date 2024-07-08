@@ -9,7 +9,8 @@ import ssl
 
 import pytest
 
-from tests.integration.utils import get_sans, get_tls_certificates
+from tests.integration.utils import get_common_name, get_sans, get_tls_certificates
+from tests.utils import TEST_CERT, TEST_CERT_PEM, TEST_KEY_PEM
 
 logger = logging.getLogger(__name__)
 
@@ -41,7 +42,9 @@ async def test_ntp_server(get_unit_ips):
         assert ntp_sock.recvfrom(65535)[0]
 
 
-async def test_tls_certificates(chrony_app, self_signed_certificates_app, get_unit_ips, ops_test):
+async def test_nts_certificates_integration(
+    chrony_app, self_signed_certificates_app, get_unit_ips, ops_test
+):
     """
     arrange: relate with self-signed-certificate application.
     act: update chrony charm config to use different server names.
@@ -51,7 +54,7 @@ async def test_tls_certificates(chrony_app, self_signed_certificates_app, get_un
     await action.wait()
     ca_cert = action.results["ca-certificate"]
 
-    await chrony_app.set_config({"server-name": "example.com"})
+    await chrony_app.set_config({"server-name": "example.com", "sources": "ntp://ntp.ubuntu.com"})
     await ops_test.model.add_relation(chrony_app.name, self_signed_certificates_app.name)
     await ops_test.model.wait_for_idle(status="active")
     for unit_ip in await get_unit_ips():
@@ -65,3 +68,23 @@ async def test_tls_certificates(chrony_app, self_signed_certificates_app, get_un
         assert sorted(get_sans(cert)) == sorted(["example.net", "*.example.net"])
         with pytest.raises(ssl.SSLCertVerificationError):
             get_tls_certificates(unit_ip, cadata=ca_cert, server_name="example.com")
+
+
+async def test_nts_certificates_configuration(chrony_app, get_unit_ips, ops_test):
+    """
+    arrange: deploy the chrony charm.
+    act: update chrony charm config to use a user supplied TLS certificate.
+    assert: confirm that the SANs in the retrieved certificates match configured server name.
+    """
+    secret_id = await ops_test.model.add_secret(
+        name="test-cert", data_args=[f"cert={TEST_CERT_PEM}", f"key={TEST_KEY_PEM}"]
+    )
+    secret_id = secret_id.strip()
+    await ops_test.model.grant_secret("test-cert", chrony_app.name)
+    await chrony_app.set_config({"nts-certificates": secret_id, "sources": "ntp://ntp.ubuntu.com"})
+    await ops_test.model.wait_for_idle(status="active")
+    for unit_ip in await get_unit_ips():
+        cert = get_tls_certificates(
+            unit_ip, cadata=TEST_CERT_PEM, server_name=get_common_name(TEST_CERT)
+        )
+        assert sorted(get_sans(cert)) == sorted(get_sans(TEST_CERT))

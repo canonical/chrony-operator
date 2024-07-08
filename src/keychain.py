@@ -5,8 +5,6 @@
 
 import pathlib
 
-import ops
-
 from chrony import TlsKeyPair
 
 
@@ -19,14 +17,12 @@ class TlsKeychain:
 
     STORAGE_DIR = pathlib.Path("/var/lib/chrony-operator/tls-keychain")
 
-    def __init__(self, charm: ops.CharmBase, namespace: str) -> None:
+    def __init__(self, namespace: str) -> None:
         """Initialize the TlsKeychain.
 
         Args:
-            charm: An instance of ops.CharmBase.
             namespace: The storage namespace.
         """
-        self._charm = charm
         self._namespace = namespace
 
     def get_private_key(self) -> str | None:
