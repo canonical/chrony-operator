@@ -15,9 +15,6 @@ import cryptography.x509
 __all__ = [
     "TEST_CA_KEY",
     "TEST_CA_CERT",
-    "TEST_KEY_PEM",
-    "TEST_CERT_PEM",
-    "TEST_CERT",
     "sign_csr",
     "get_csr_common_name",
 ]

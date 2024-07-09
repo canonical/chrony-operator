@@ -9,12 +9,7 @@ import ssl
 
 import pytest
 
-from tests.integration.utils import (
-    gen_tls_certificate,
-    get_common_name,
-    get_sans,
-    get_tls_certificates,
-)
+from tests.integration.utils import gen_tls_certificate, get_sans, get_tls_certificates
 
 logger = logging.getLogger(__name__)
 
