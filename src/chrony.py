@@ -261,13 +261,13 @@ class Chrony:
         self.CERTS_DIR.mkdir(exist_ok=True, mode=0o700)
         shutil.chown(self.CERTS_DIR, "_chrony", "_chrony")
 
-    def _iter_certs_dir(self) -> typing.Iterator[pathlib.Path]:
+    def _iter_certs_dir(self) -> list[pathlib.Path]:  # pragma: nocover
         """Iterate over all certificate files in the certificate directory.
 
         Returns:
             An iterator over the paths of the certificate files.
         """
-        return self.CERTS_DIR.iterdir()  # pragma: nocover
+        return [f for f in self.CERTS_DIR.iterdir() if f.suffix in {".crt", ".key"}]
 
     @staticmethod
     def _write_certs_file(path: pathlib.Path, content: str) -> None:  # pragma: nocover
