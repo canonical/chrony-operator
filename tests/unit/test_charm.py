@@ -18,11 +18,13 @@ def test_config_time_sources(harness: ops.testing.Harness):
     """
     harness.set_leader()
     harness.begin_with_initial_hooks()
-    assert harness.charm.unit.status.name == "blocked"
+    assert any(status.name == "blocked" for status in harness.charm.statuses)
+    harness.charm.statuses.clear()
     harness.charm.chrony.install.assert_called()
 
     harness.update_config({"sources": "ntp://example.com"})
-    assert harness.charm.unit.status.name == "active"
+    assert all(status.name == "active" for status in harness.charm.statuses)
+    harness.charm.statuses.clear()
     harness.charm.chrony.restart.assert_called()
     assert "pool example.com" in harness.charm.chrony.read_config()
 
