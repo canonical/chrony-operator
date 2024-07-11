@@ -5,8 +5,6 @@
 
 """Charm unit tests."""
 
-# pylint: disable=protected-access
-
 import ops.testing
 
 

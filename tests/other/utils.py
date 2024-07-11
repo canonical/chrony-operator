@@ -13,10 +13,10 @@ import ops.testing
 
 from tests.utils import TEST_CA_CERT, TEST_CA_KEY, get_csr_common_name, sign_csr
 
-__all__ = ["TEST_CA_KEY", "TEST_CA_CERT", "sign_csr", "get_csr_common_name", "TlsProvider"]
+__all__ = ["TEST_CA_KEY", "TEST_CA_CERT", "sign_csr", "get_csr_common_name", "TlsProviderStub"]
 
 
-class TlsProvider:
+class TlsProviderStub:
     """tls-certificates provider."""
 
     def __init__(self, harness: ops.testing.Harness, remote_app="tls-provider"):

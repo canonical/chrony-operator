@@ -300,7 +300,7 @@ class Chrony:
         Args:
             path: The path to the certificate file to delete.
         """
-        path.unlink()  # pragma: nocover
+        path.unlink(missing_ok=True)  # pragma: nocover
 
     def read_tls_key_pairs(self) -> list[TlsKeyPair]:
         """Read TLS key pairs from the certificates directory.

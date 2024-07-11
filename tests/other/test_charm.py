@@ -12,7 +12,7 @@ import pathlib
 
 import ops.testing
 
-from tests.other.utils import TlsProvider, get_csr_common_name
+from tests.other.utils import TlsProviderStub, get_csr_common_name
 
 
 def test_tls_keychain_initiation(harness: ops.testing.Harness):
@@ -82,7 +82,7 @@ def test_setup_nts(harness: ops.testing.Harness):
     """
     harness.update_config({"server-name": "example.com", "sources": "ntp://example.com"})
     harness.begin_with_initial_hooks()
-    tls_provider = TlsProvider(harness)
+    tls_provider = TlsProviderStub(harness)
     tls_provider.relate()
     tls_provider.sign()
 
@@ -104,7 +104,7 @@ def test_tls_certificate_revoked(harness: ops.testing.Harness):
     """
     harness.update_config({"server-name": "example.com", "sources": "ntp://example.com"})
     harness.begin_with_initial_hooks()
-    tls_provider = TlsProvider(harness)
+    tls_provider = TlsProviderStub(harness)
     tls_provider.relate()
     tls_provider.sign()
     chain_on_disk = harness.charm.chrony._read_certs_file(
@@ -130,7 +130,7 @@ def test_tls_certificate_expired(harness: ops.testing.Harness):
     """
     harness.update_config({"server-name": "example.com", "sources": "ntp://example.com"})
     harness.begin_with_initial_hooks()
-    tls_provider = TlsProvider(harness)
+    tls_provider = TlsProviderStub(harness)
     tls_provider.relate()
     tls_provider.sign()
     assert len(tls_provider.signed) == 1
@@ -153,7 +153,7 @@ def test_server_name_change(harness: ops.testing.Harness):
     """
     harness.update_config({"server-name": "example.com", "sources": "ntp://example.com"})
     harness.begin_with_initial_hooks()
-    tls_provider = TlsProvider(harness)
+    tls_provider = TlsProviderStub(harness)
     tls_provider.relate()
     tls_provider.sign()
 
@@ -176,7 +176,7 @@ def test_server_name_reset(harness: ops.testing.Harness):
     """
     harness.update_config({"server-name": "example.com", "sources": "ntp://example.com"})
     harness.begin_with_initial_hooks()
-    tls_provider = TlsProvider(harness)
+    tls_provider = TlsProviderStub(harness)
     tls_provider.relate()
     tls_provider.sign()
     assert "ntsservercert" in harness.charm.chrony.read_config()
@@ -200,7 +200,7 @@ def test_remove_tls_certificates_integration(harness: ops.testing.Harness):
     """
     harness.update_config({"server-name": "example.com", "sources": "ntp://example.com"})
     harness.begin_with_initial_hooks()
-    tls_provider = TlsProvider(harness)
+    tls_provider = TlsProviderStub(harness)
     tls_provider.relate()
     tls_provider.sign()
     assert len(tls_provider.signed) == 1
