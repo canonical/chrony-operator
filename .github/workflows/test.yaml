@@ -10,7 +10,7 @@ jobs:
     with:
       charmcraft-channel: latest/edge
       self-hosted-runner: true
-      self-hosted-runner-image: nobel
+      self-hosted-runner-image: noble
 
   integration-tests:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
