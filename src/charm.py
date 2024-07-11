@@ -54,8 +54,7 @@ class ChronyCharm(ops.CharmBase):
 
     def _on_certificates_relation_created(self, _: ops.RelationCreatedEvent) -> None:
         """Handle the certificates relation-creation event."""
-        if self.unit.is_leader():
-            self.unit.open_port("tcp", 4460)
+        self.unit.open_port("tcp", 4460)
         self._do_renew_certificate()
 
     def _on_certificates_relation_broken(self, _: ops.RelationBrokenEvent) -> None:
@@ -99,7 +98,6 @@ class ChronyCharm(ops.CharmBase):
         if not self._get_server_name():
             # canary exception
             raise RuntimeError("no server name")  # pragma: nocover
-        self.certificates.get_expiring_certificates()
         new_csr = tls_certificates.generate_csr(
             private_key=private_key.encode(),
             subject=self._get_server_name(),
