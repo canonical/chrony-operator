@@ -103,10 +103,15 @@ class ChronyCharm(ops.CharmBase):
         self._configure_chrony()
 
     def _renew_certificate(self) -> None:
-        """Renew the certificate."""
+        """Renew the certificate.
+
+        Raises:
+            AssertionError: if there's no server name (canary exception).
+        """
         old_csr = self.tls_keychain.get_csr()
         private_key = self.tls_keychain.get_private_key()
-        assert self._get_server_name()  # nosec
+        if not self._get_server_name():  # pragma: nocover
+            raise AssertionError("no server name")
         new_csr = tls_certificates.generate_csr(
             private_key=private_key.encode(),
             subject=self._get_server_name(),
