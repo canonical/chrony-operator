@@ -302,22 +302,6 @@ class Chrony:
         """
         path.unlink()  # pragma: nocover
 
-    @staticmethod
-    def batched(iterable: typing.Iterable, n: int) -> typing.Iterable:  # pragma: nocover
-        """Replace itertools.batched.
-
-        Args:
-            iterable: The iterable to batch.
-            n: The number of items per batch.
-
-        Yields:
-            Tuples containing up to n items from the iterable.
-        """
-        # replace this with itertools.batched once 24.04 is supported by juju
-        iterator = iter(iterable)
-        while batch := tuple(itertools.islice(iterator, n)):
-            yield batch
-
     def read_tls_key_pairs(self) -> list[TlsKeyPair]:
         """Read TLS key pairs from the certificates directory.
 
@@ -327,7 +311,7 @@ class Chrony:
         self._make_certs_dir()
         files = sorted(self._iter_certs_dir())
         key_pairs = []
-        for crt, key in self.batched(files, 2):
+        for crt, key in itertools.batched(files, 2):
             key_pairs.append(
                 TlsKeyPair(
                     certificate=self._read_certs_file(crt),
@@ -348,7 +332,7 @@ class Chrony:
         self._make_certs_dir()
         files = sorted(self._iter_certs_dir())
         for idx, (key_pair_files, key_pair) in enumerate(
-            itertools.zip_longest(self.batched(files, 2), key_pairs)
+            itertools.zip_longest(itertools.batched(files, 2), key_pairs)
         ):
             if key_pair_files is None:
                 self._write_certs_file(self.CERTS_DIR / f"{idx:04}.crt", key_pair.certificate)
