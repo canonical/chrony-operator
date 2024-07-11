@@ -32,7 +32,6 @@ class ChronyCharm(ops.CharmBase):
         self.chrony = Chrony()
         self.certificates = tls_certificates.TLSCertificatesRequiresV3(self, "nts-certificates")
         self.tls_keychain = TlsKeychain(namespace="nts-certificates")
-        self.statuses: list[ops.StatusBase] = []
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
@@ -54,15 +53,20 @@ class ChronyCharm(ops.CharmBase):
         )
         self.framework.observe(self.on.collect_unit_status, self._on_collect_unit_status)
 
-    def _on_collect_unit_status(self, event: ops.CollectStatusEvent) -> None:
-        """Set unit status based on collected status and status priorities.
-
-        Args:
-            event: an instance of CollectStatusEvent
-        """
-        for status in reversed(self.statuses):
-            event.add_status(status)
-        self.statuses.clear()
+    def _on_collect_unit_status(self, _: ops.CollectStatusEvent) -> None:
+        """Set unit status based on current charm status."""
+        if not self._get_time_sources():
+            self.unit.status = ops.BlockedStatus("no time source configured")
+            return
+        if not self._get_server_name() and self.model.get_relation("nts-certificates"):
+            self.unit.status = ops.BlockedStatus(
+                "server-name is required for nts-certificates integration"
+            )
+            return
+        if self.certificates.get_certificate_signing_requests(unfulfilled_only=True):
+            self.unit.status = ops.WaitingStatus("waiting for new certificate")
+            return
+        self.unit.status = ops.ActiveStatus()
 
     def _on_certificates_relation_created(self, _: ops.RelationCreatedEvent) -> None:
         """Handle the certificates relation-creation event."""
@@ -87,7 +91,6 @@ class ChronyCharm(ops.CharmBase):
     def _do_renew_certificate(self) -> None:
         """Handle the event when certificate is unavailable."""
         if not self._get_server_name():
-            self.statuses.append(ops.BlockedStatus("server-name is not available"))
             return
         self._renew_certificate()
 
@@ -125,7 +128,6 @@ class ChronyCharm(ops.CharmBase):
             )
         self.tls_keychain.set_server_name(self._get_server_name())
         self.tls_keychain.set_csr(new_csr.decode(encoding="ascii").strip())
-        self.statuses.append(ops.WaitingStatus("Waiting for new certificate"))
 
     def _revoke_certificate(self) -> None:
         """Renew the certificate."""
@@ -144,7 +146,6 @@ class ChronyCharm(ops.CharmBase):
 
     def _do_install(self) -> None:
         """Install required packages and open NTP port."""
-        status = self.unit.status
         self.unit.status = ops.MaintenanceStatus("installing chrony")
         self.chrony.install()
         self.unit.open_port("udp", 123)
@@ -152,7 +153,6 @@ class ChronyCharm(ops.CharmBase):
             self.tls_keychain.set_private_key(
                 tls_certificates.generate_private_key().decode("ascii").strip()
             )
-        self.unit.status = status
 
     def _on_config_changed(self, _: ops.ConfigChangedEvent) -> None:
         """Handle the "config-changed" event."""
@@ -186,10 +186,8 @@ class ChronyCharm(ops.CharmBase):
         """Configure chrony."""
         sources = self._get_time_sources()
         if not sources:
-            self.statuses.append(ops.BlockedStatus("no time source configured"))
             return
         self.chrony.new_config(sources=sources, tls_key_pairs=self._get_nts_certificates()).apply()
-        self.statuses.append(ops.ActiveStatus())
 
     def _get_server_name(self) -> str | None:
         """Get server name from charm configuration.
