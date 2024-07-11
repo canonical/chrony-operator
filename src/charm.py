@@ -103,16 +103,10 @@ class ChronyCharm(ops.CharmBase):
         self._configure_chrony()
 
     def _renew_certificate(self) -> None:
-        """Renew the certificate.
-
-        Raises:
-            RuntimeError: canary exception
-        """
+        """Renew the certificate."""
         old_csr = self.tls_keychain.get_csr()
         private_key = self.tls_keychain.get_private_key()
-        if not self._get_server_name():
-            # canary exception
-            raise RuntimeError("no server name")  # pragma: nocover
+        assert self._get_server_name()  # nosec
         new_csr = tls_certificates.generate_csr(
             private_key=private_key.encode(),
             subject=self._get_server_name(),
