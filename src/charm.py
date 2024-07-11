@@ -75,8 +75,7 @@ class ChronyCharm(ops.CharmBase):
 
     def _on_certificates_relation_broken(self, _: ops.RelationBrokenEvent) -> None:
         """Handle the certificates relation-broken event."""
-        if self.unit.is_leader():
-            self.unit.close_port("tcp", 4460)
+        self.unit.close_port("tcp", 4460)
         self.tls_keychain.clear()
         self._configure_chrony()
 
@@ -164,9 +163,7 @@ class ChronyCharm(ops.CharmBase):
                 or self.tls_keychain.get_server_name() != self._get_server_name()
             )
         ):
-            self._configure_chrony()
             self._renew_certificate()
-            return
         if not self._get_server_name() and self.tls_keychain.get_private_key():
             self._revoke_certificate()
         self._configure_chrony()
