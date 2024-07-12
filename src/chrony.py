@@ -3,6 +3,9 @@
 
 """Chrony controller."""
 
+# check chrony.conf document for _PoolOptions attributes.
+# flake8: noqa: DCO060
+
 import collections
 import itertools
 import logging
