@@ -70,12 +70,10 @@ class ChronyCharm(ops.CharmBase):
 
     def _on_certificates_relation_created(self, _: ops.RelationCreatedEvent) -> None:
         """Handle the certificates relation-creation event."""
-        self.unit.open_port("tcp", 4460)
         self._do_renew_certificate()
 
     def _on_certificates_relation_broken(self, _: ops.RelationBrokenEvent) -> None:
         """Handle the certificates relation-broken event."""
-        self.unit.close_port("tcp", 4460)
         self.tls_keychain.clear()
         self._configure_chrony()
 
@@ -183,6 +181,10 @@ class ChronyCharm(ops.CharmBase):
         sources = self._get_time_sources()
         if not sources:
             return
+        if self._get_nts_certificates():
+            self.unit.open_port("tcp", 4460)
+        else:
+            self.unit.close_port("tcp", 4460)
         self.chrony.new_config(sources=sources, tls_key_pairs=self._get_nts_certificates()).apply()
 
     def _get_server_name(self) -> str | None:
