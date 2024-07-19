@@ -49,7 +49,7 @@ config:
       type: string
       default: ""
     nts-certificates:
-      descriptions: >-
+      description: >-
         A comma-separated list of juju secret IDs for enabling NTS with. 
         Each juju secret ID must be a juju secret URI (i.e. start with `secret:`). 
         The secret must include two fields: the `cert` field, which contains the PEM-encoded TLS certificate, 
