@@ -11,6 +11,7 @@ import itertools
 import logging
 import pathlib
 import shutil
+import subprocess  # nosec
 import textwrap
 import typing
 import urllib.parse
@@ -239,9 +240,14 @@ class Chrony:
     CERTS_DIR = pathlib.Path("/etc/chrony/certs")
 
     @staticmethod
-    def install() -> None:
+    def install() -> None:  # pragma: nocover
         """Install the Chrony on the system."""
-        apt.add_package(["chrony", "ca-certificates"], update_cache=True)  # pragma: nocover
+        subprocess.check_call(
+            ["add-apt-repository", "-y", "ppa:canonical-is-devops/chrony-charm"]
+        )  # nosec
+        apt.add_package(
+            ["chrony", "ca-certificates", "prometheus-chrony-exporter"], update_cache=True
+        )
 
     def read_config(self) -> str:
         """Read the current chrony configuration file.

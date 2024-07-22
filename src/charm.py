@@ -11,6 +11,7 @@ import logging
 import typing
 
 import ops
+from charms.grafana_agent.v0.cos_agent import COSAgentProvider
 from charms.tls_certificates_interface.v3 import tls_certificates
 
 from chrony import Chrony, TimeSource, TlsKeyPair
@@ -32,6 +33,13 @@ class ChronyCharm(ops.CharmBase):
         self.chrony = Chrony()
         self.certificates = tls_certificates.TLSCertificatesRequiresV3(self, "nts-certificates")
         self.tls_keychain = TlsKeychain(namespace="nts-certificates")
+        self._grafana_agent = COSAgentProvider(
+            self,
+            metrics_endpoints=[
+                {"path": "/metrics", "port": 9123},
+            ],
+            dashboard_dirs=["./src/grafana_dashboards"],
+        )
         self.framework.observe(self.on.install, self._on_install)
         self.framework.observe(self.on.upgrade_charm, self._on_upgrade_charm)
         self.framework.observe(self.on.config_changed, self._on_config_changed)
