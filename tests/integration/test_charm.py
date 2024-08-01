@@ -108,7 +108,7 @@ async def test_chrony_exporter(chrony_app, ops_test):
     assert: confirm that metrics are scraped.
     """
     for unit in chrony_app.units:
-        _, stdout, _ = ops_test.juju(
+        _, stdout, _ = await ops_test.juju(
             "ssh", unit.name, "curl", "-m", "10", "localhost:9123/metrics"
         )
         assert "chrony_serverstats_ntp_packets_received_total" in stdout
