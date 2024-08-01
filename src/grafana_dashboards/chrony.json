@@ -783,32 +783,6 @@
       "type": "timeseries"
     },
     {
-      "collapsed": false,
-      "datasource": {
-        "type": "prometheus",
-        "uid": "${prometheusds}"
-      },
-      "gridPos": {
-        "h": 1,
-        "w": 24,
-        "x": 0,
-        "y": 24
-      },
-      "id": 13,
-      "panels": [],
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "${prometheusds}"
-          },
-          "refId": "A"
-        }
-      ],
-      "title": "Sources",
-      "type": "row"
-    },
-    {
       "datasource": {
         "type": "prometheus",
         "uid": "${prometheusds}"
@@ -907,7 +881,7 @@
         "h": 8,
         "w": 24,
         "x": 0,
-        "y": 16
+        "y": 24
       },
       "id": 19,
       "options": {
@@ -938,7 +912,7 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_join(chrony_sources_state_info{instance=\"$instance\",juju_application=~\"$juju_application\",juju_model=~\"$juju_model\",juju_model_uuid=~\"$juju_model_uuid\",juju_unit=~\"$juju_unit\"}, \"source_uid\", \"-\", \"juju_model_uuid\", \"juju_unit\", \"source_address\")",
+          "expr": "label_join(chrony_sources_state_info{juju_application=~\"$juju_application\",juju_model=~\"$juju_model\",juju_model_uuid=~\"$juju_model_uuid\",juju_unit=~\"$juju_unit\"}, \"source_uid\", \"-\", \"juju_model_uuid\", \"juju_unit\", \"source_address\")",
           "format": "table",
           "instant": true,
           "interval": "",
@@ -953,9 +927,9 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_join(chrony_sources_stratum{juju_application=~\"$juju_application\", juju_model=~\"$juju_model\", juju_model_uuid=~\"$juju_model_uuid\", juju_unit=~\"$juju_unit\"}, \"source_uid\", \"-\", \"juju_model_uuid\", \"juju_unit\", \"source_address\")",
+          "expr": "label_join(chrony_sources_stratum{juju_application=~\"$juju_application\",juju_model=~\"$juju_model\",juju_model_uuid=~\"$juju_model_uuid\",juju_unit=~\"$juju_unit\"}, \"source_uid\", \"-\", \"juju_model_uuid\", \"juju_unit\", \"source_address\")",
           "format": "table",
-          "hide": false,
+          "hide": true,
           "instant": true,
           "legendFormat": "__auto",
           "range": false,
@@ -968,9 +942,9 @@
           },
           "editorMode": "code",
           "exemplar": false,
-          "expr": "label_join(chrony_sources_polling_interval_seconds{juju_application=~\"$juju_application\", juju_model=~\"$juju_model\", juju_model_uuid=~\"$juju_model_uuid\", juju_unit=~\"$juju_unit\"}, \"source_uid\", \"-\", \"juju_model_uuid\", \"juju_unit\", \"source_address\")",
+          "expr": "label_join(chrony_sources_polling_interval_seconds{juju_application=~\"$juju_application\",juju_model=~\"$juju_model\",juju_model_uuid=~\"$juju_model_uuid\",juju_unit=~\"$juju_unit\"}, \"source_uid\", \"-\", \"juju_model_uuid\", \"juju_unit\", \"source_address\")",
           "format": "table",
-          "hide": false,
+          "hide": true,
           "instant": true,
           "interval": "",
           "legendFormat": "__auto",
@@ -1072,6 +1046,32 @@
         }
       ],
       "type": "table"
+    },
+    {
+      "collapsed": false,
+      "datasource": {
+        "type": "prometheus",
+        "uid": "${prometheusds}"
+      },
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 32
+      },
+      "id": 13,
+      "panels": [],
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${prometheusds}"
+          },
+          "refId": "A"
+        }
+      ],
+      "title": "Sources",
+      "type": "row"
     },
     {
       "datasource": {
