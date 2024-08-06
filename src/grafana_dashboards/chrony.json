@@ -21,10 +21,9 @@
       }
     ]
   },
-  "description": "Dashboard for Prometheus chrony_exporter",
+  "description": "Dashboard for Chrony Operator",
   "editable": true,
   "fiscalYearStartMonth": 0,
-  "gnetId": 19186,
   "graphTooltip": 1,
   "links": [],
   "liveNow": false,
@@ -45,7 +44,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P5887CE5F53B228A3"
+        "uid": "${prometheusds}"
       },
       "fieldConfig": {
         "defaults": {
@@ -123,7 +122,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P5887CE5F53B228A3"
+            "uid": "${prometheusds}"
           },
           "editorMode": "code",
           "expr": "rate(chrony_serverstats_ntp_packets_received_total{juju_application=~\"$juju_application\",juju_model=~\"$juju_model\",juju_model_uuid=~\"$juju_model_uuid\",juju_unit=~\"$juju_unit\"}[$__rate_interval])",
@@ -137,7 +136,7 @@
     {
       "datasource": {
         "type": "prometheus",
-        "uid": "P5887CE5F53B228A3"
+        "uid": "${prometheusds}"
       },
       "fieldConfig": {
         "defaults": {
@@ -215,7 +214,7 @@
         {
           "datasource": {
             "type": "prometheus",
-            "uid": "P5887CE5F53B228A3"
+            "uid": "${prometheusds}"
           },
           "editorMode": "builder",
           "expr": "rate(chrony_serverstats_nts_ke_connections_accepted_total{juju_application=~\"$juju_application\", juju_model=~\"$juju_model\", juju_model_uuid=~\"$juju_model_uuid\", juju_unit=~\"$juju_unit\"}[$__rate_interval])",
@@ -1371,9 +1370,8 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "",
-  "title": "chrony",
-  "uid": "c252be85-471b-41c9-b1cb-f0e1b8206593",
-  "version": 4,
+  "timezone": "UTC",
+  "title": "Chrony Operator",
+  "version": 1,
   "weekStart": ""
 }
