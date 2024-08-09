@@ -99,3 +99,16 @@ async def test_nts_certificates_configuration(chrony_app, get_unit_ips, ops_test
             unit_ip, cadata=cert.cert_pem, server_name=cert.server_name
         )
         assert get_sans(remote_cert) == [cert.server_name]
+
+
+async def test_chrony_exporter(chrony_app, ops_test):
+    """
+    arrange: deploy the chrony charm.
+    act: request chrony_exporter metrics endpoint.
+    assert: confirm that metrics are scraped.
+    """
+    for unit in chrony_app.units:
+        _, stdout, _ = await ops_test.juju(
+            "ssh", unit.name, "curl", "-m", "10", "localhost:9123/metrics"
+        )
+        assert "chrony_serverstats_ntp_packets_received_total" in stdout
