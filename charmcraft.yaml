@@ -66,6 +66,10 @@ requires:
     interface: tls-certificates
     limit: 1
 
+provides:
+  cos-agent:
+    interface: cos_agent
+
 base: ubuntu@24.04
 build-base: ubuntu@24.04
 platforms:
