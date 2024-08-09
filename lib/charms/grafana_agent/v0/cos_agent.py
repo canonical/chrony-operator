@@ -213,17 +213,17 @@ from itertools import chain
 from pathlib import Path
 from typing import TYPE_CHECKING, Any, Callable, ClassVar, Dict, List, Optional, Set, Tuple, Union
 
-try:
-    import pydantic.v1 as pydantic
-except ImportError:
-    import pydantic
-
 from cosl import GrafanaDashboard, JujuTopology
 from cosl.rules import AlertRules
 from ops.charm import RelationChangedEvent
 from ops.framework import EventBase, EventSource, Object, ObjectEvents
 from ops.model import Relation
 from ops.testing import CharmType
+
+try:
+    import pydantic.v1 as pydantic
+except ImportError:
+    import pydantic
 
 if TYPE_CHECKING:
     try:
@@ -238,9 +238,9 @@ if TYPE_CHECKING:
 
 LIBID = "dc15fa84cef84ce58155fb84f6c6213a"
 LIBAPI = 0
-LIBPATCH = 8
+LIBPATCH = 9
 
-PYDEPS = ["cosl", "pydantic < 2"]
+PYDEPS = ["cosl", "pydantic"]
 
 DEFAULT_RELATION_NAME = "cos-agent"
 DEFAULT_PEER_RELATION_NAME = "peers"
@@ -251,6 +251,7 @@ DEFAULT_SCRAPE_CONFIG = {
 
 logger = logging.getLogger(__name__)
 SnapEndpoint = namedtuple("SnapEndpoint", "owner, name")
+
 
 class CosAgentProviderUnitData(pydantic.BaseModel):
     """Unit databag model for `cos-agent` relation."""
@@ -383,7 +384,7 @@ class COSAgentProvider(Object):
                     )
                     relation.data[self._charm.unit][data.KEY] = data.json()
                 except (
-                    pydantic.v1.ValidationError,
+                    pydantic.ValidationError,
                     json.decoder.JSONDecodeError,
                 ) as e:
                     logger.error("Invalid relation data provided: %s", e)
@@ -580,7 +581,7 @@ class COSAgentRequirer(Object):
     def _validated_provider_data(self, raw) -> Optional[CosAgentProviderUnitData]:
         try:
             return CosAgentProviderUnitData(**json.loads(raw))
-        except (pydantic.v1.ValidationError, json.decoder.JSONDecodeError) as e:
+        except (pydantic.ValidationError, json.decoder.JSONDecodeError) as e:
             self.on.validation_error.emit(message=str(e))  # pyright: ignore
             return None
 
@@ -724,8 +725,18 @@ class COSAgentRequirer(Object):
     @property
     def snap_log_endpoints(self) -> List[SnapEndpoint]:
         """Fetch logging endpoints exposed by related snaps."""
+        endpoints = []
+        endpoints_with_topology = self.snap_log_endpoints_with_topology
+        for endpoint, _ in endpoints_with_topology:
+            endpoints.append(endpoint)
+
+        return endpoints
+
+    @property
+    def snap_log_endpoints_with_topology(self) -> List[Tuple[SnapEndpoint, JujuTopology]]:
+        """Fetch logging endpoints and charm topology for each related snap."""
         plugs = []
-        for data, _ in self._remote_data:
+        for data, topology in self._remote_data:
             targets = data.log_slots
             if targets:
                 for target in targets:
@@ -736,15 +747,16 @@ class COSAgentRequirer(Object):
                             "endpoints; this should not happen."
                         )
                     else:
-                        plugs.append(target)
+                        plugs.append((target, topology))
 
         endpoints = []
-        for plug in plugs:
+        for plug, topology in plugs:
             if ":" not in plug:
                 logger.error(f"invalid plug definition received: {plug}. Ignoring...")
             else:
                 endpoint = SnapEndpoint(*plug.split(":"))
-                endpoints.append(endpoint)
+                endpoints.append((endpoint, topology))
+
         return endpoints
 
     @property
