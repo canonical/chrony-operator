@@ -19,11 +19,11 @@ juju set-model-constraints virt-type=virtual-machine
 ```
 
 ## Deploy the chrony charm and confirm the chrony charm are deployed
-1. Deploy the latest chrony charm.
+Deploy the latest chrony charm.
 ```
 juju deploy chrony --channel latest/edge
 ```
-2. Run `juju status`. You should see something like this (IPs will be different):
+Run `juju status`. You should see something like this (IPs will be different):
 ```
 Model          Controller  Cloud/Region      Version  SLA          Timestamp
 test-chrony    lxd         lxd/default       3.5.2    unsupported  07:20:46Z
@@ -39,8 +39,8 @@ Machine  State    Address        Inst id        Base          AZ  Message
 ```
 
 ## Configure the time source for chrony charm
-Since Chrony needs a time source before it can serve time to others, 
-we must configure a time source for the Chrony charm. 
+We must configure a time source for the Chrony charm so it can serve time to
+other NTP clients.
 In this example, we will use an upstream NTP server (ntp.ubuntu.com) 
 as the time source and set the iburst option to true for this source.
 
@@ -48,7 +48,8 @@ as the time source and set the iburst option to true for this source.
 juju config chrony "sources=ntp://ntp.ubuntu.com?iburst=true"
 ```
 
-Once the source is configured, the chrony charm should enter the active state.
+Once the source is configured, the chrony charm should enter the active state 
+in the `juju status` table.
 
 ## Use the Chrony Charm as a Time Source
 You can now use the Chrony charm as a time source to set up time synchronization
@@ -126,7 +127,7 @@ server ntp.example.com nts iburst certset 1
 ntstrustedcerts 1 /etc/chrony/nts.crt
 ```
 
-Wait a few seconds, and you should see that the Chrony client is synchronized 
+Wait a few seconds, and you should see that the Chrony client is synchronised 
 with the Chrony charm.
 
 ```
