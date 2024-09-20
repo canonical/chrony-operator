@@ -6,7 +6,7 @@ This tutorial will walk you through deploying the chrony charm; you will:
 2. Enable NTS for the chrony charm
 3. Use the chrony charm as a time server
 
-## Prerequisites
+## Requirements
 * LXD installed and bootstrapped.
 * A host machine with Juju version 3.4 or above and a Juju controller bootstrapped.
 
@@ -39,7 +39,7 @@ Machine  State    Address        Inst id        Base          AZ  Message
 ```
 
 ## Configure the time source for chrony charm
-We must configure a time source for the chrony charm so it can serve time to
+We must configure a time source for the Chrony charm so it can serve time to 
 other NTP clients.
 In this example, we will use an upstream NTP server (ntp.ubuntu.com) 
 as the time source and set the iburst option to true for this source.
@@ -52,7 +52,7 @@ Once the source is configured, the chrony charm should enter the active state
 in the `juju status` table.
 
 ## Use the chrony Charm as a Time Source
-You can now use the chrony charm as a time source to set up time synchronization
+You can now use the chrony charm as a time source to set up time synchronisation
 on any servers. 
 Let's try this by creating a LXD virtual machine and installing chrony on the 
 virtual machine and using it as an NTP client.
@@ -157,7 +157,7 @@ Leap status     : Normal
 ```
 
 ## Clean up the environment
-You can now clean up the environment by removing the juju model and the NTP
+You can now clean up the environment by removing the Juju model and the NTP
 client virtual machine.
 
 ```
