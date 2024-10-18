@@ -1,4 +1,4 @@
-cryptography==43.0.1
+cryptography==43.0.3
 jsonschema==4.23.0
 ops==2.16.1
 pydantic==2.9.0
