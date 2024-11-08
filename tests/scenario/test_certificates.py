@@ -4,6 +4,7 @@
 """Scenario tests."""
 import copy
 import json
+import typing
 
 import pytest
 from charms.tls_certificates_interface.v3 import tls_certificates
@@ -28,7 +29,9 @@ def test_csr_created_after_nts_certificates_integration(mock_tls_keychain):
 
     state_out = ctx.run(_Event("nts-certificates-relation-created", relation=relation), state_in)
 
-    assert state_out.get_relation(relation.id).local_unit_data["certificate_signing_requests"]
+    assert typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+        "certificate_signing_requests"
+    ]
 
 
 @pytest.mark.usefixtures("mock_chrony")
@@ -45,8 +48,8 @@ def test_csr_not_created_if_server_name_unset(mock_tls_keychain):
 
     state_out = ctx.run(_Event("nts-certificates-relation-created", relation=relation), state_in)
 
-    assert (
-        "certificate_signing_requests" not in state_out.get_relation(relation.id).local_unit_data
+    assert "certificate_signing_requests" not in typing.cast(
+        dict, state_out.get_relation(relation.id).local_unit_data
     )
 
 
@@ -64,7 +67,9 @@ def test_csr_created_after_server_name_set(mock_tls_keychain):
 
     state_out = ctx.run(CharmEvents.config_changed(), state_in)
 
-    assert state_out.get_relation(relation.id).local_unit_data["certificate_signing_requests"]
+    assert typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+        "certificate_signing_requests"
+    ]
 
 
 def test_receive_certificate(mock_chrony, helper):
@@ -116,7 +121,9 @@ def test_server_name_reset_after_certificates(mock_chrony, helper):
     assert "ntsservercert" not in mock_chrony.read_config()
     assert not helper.tls_keychain.get_chain()
     assert not json.loads(
-        state_out.get_relation(relation.id).local_unit_data["certificate_signing_requests"]
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
     )
 
 
@@ -144,7 +151,9 @@ def test_server_name_change_after_certificate_assigned(mock_chrony, helper):
 
     assert "ntsservercert" in mock_chrony.read_config()
     csr = json.loads(
-        state_out.get_relation(relation.id).local_unit_data["certificate_signing_requests"]
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
     )
     assert get_csr_common_name(csr[0]["certificate_signing_request"]) == "example.net"
 
@@ -168,7 +177,9 @@ def test_server_name_change_before_certificates_assigned(helper):
 
     state_out = ctx.run(CharmEvents.config_changed(), state_in)
     csr = json.loads(
-        state_out.get_relation(relation.id).local_unit_data["certificate_signing_requests"]
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
     )
     assert get_csr_common_name(csr[0]["certificate_signing_request"]) == "example.net"
 
@@ -196,12 +207,12 @@ def test_certificate_expired(monkeypatch, helper):
     )
 
     monkeypatch.setenv("JUJU_SECRET_REVISION", "0")
-    state_out = ctx.run(
-        CharmEvents.secret_expired(secret, revision=secret._tracked_revision), state_in
-    )
+    state_out = ctx.run(CharmEvents.secret_expired(secret, revision=0), state_in)
     assert state_out.get_relation(relation.id) is relation
     assert (
-        state_out.get_relation(relation.id).local_unit_data["certificate_signing_requests"]
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
         != local_unit_data["certificate_signing_requests"]
     )
 
@@ -231,7 +242,9 @@ def test_certificate_revoked(helper):
     state_out = ctx.run(CharmEvents.relation_changed(relation), state_in)
 
     assert (
-        state_out.get_relation(relation.id).local_unit_data["certificate_signing_requests"]
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
         != local_unit_data["certificate_signing_requests"]
     )
 
