@@ -2,4 +2,4 @@ cryptography==43.0.3
 jsonschema==4.23.0
 ops==2.17.0
 pydantic==2.9.0
-cosl==0.0.31
+cosl==0.0.42
