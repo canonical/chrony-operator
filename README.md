@@ -21,11 +21,10 @@ You’ll need a workstation, e.g., a laptop, with sufficient resources to launch
 You can follow the tutorial [here](https://juju.is/docs/juju/set-up--tear-down-your-test-environment#heading--set-up-automatically) to set up a test environment for Juju with LXD.
 
 ### Deploy
-Deploy the Chrony charm using the `juju deploy` command.
+From inside the virtual machine, deploy the Chrony charm using the `juju deploy` command.
 
 ```
-ubuntu@tutorial-vm:~$ juju deploy chrony --channel latest/edge
-Deployed "chrony" from charm-hub charm "chrony", revision 42 in channel latest/edge on ubuntu@24.04/stable
+juju deploy chrony --channel latest/edge
 ```
 
 ### Basic operations
@@ -33,13 +32,14 @@ When the Chrony charm has finished deployment and installation, it should show t
 Now we can run the `juju config` command to configure an upstream time source for the Chrony charm. In this example, we will use Ubuntu's time server.
 
 ```
-ubuntu@tutorial-vm:~$ juju config chrony sources=ntp://ntp.ubuntu.com
+juju config chrony sources=ntp://ntp.ubuntu.com
 ```
 
 Shortly after the configuration, the Chrony charm should transition into the active state and be able to provide time to other NTP clients.
 
 ## Learn more
 * [Read more](https://charmhub.io/chrony)
+* [Official webpage](https://chrony-project.org)
 * [Troubleshooting](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
 
 ## Project and community
