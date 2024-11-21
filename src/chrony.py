@@ -69,7 +69,9 @@ class _PoolOptions(pydantic.BaseModel):
             Chrony pool directive option string.
         """
         options = []
-        for field in sorted(f for f in _PoolOptions.model_fields if f != "copy"):
+        # mypy and pylint have problems handling the model_fields class attribute.
+        # pylint: disable=not-an-iterable
+        for field in sorted(f for f in _PoolOptions.model_fields if f != "copy"):  # type: ignore
             value = getattr(self, field)
             if value is True:
                 options.append(field)
