@@ -2,12 +2,14 @@
 # See LICENSE file for licensing details.
 
 """Scenario tests."""
-
+import copy
 import json
+import typing
 
 import pytest
 from charms.tls_certificates_interface.v3 import tls_certificates
-from scenario import Context, Event, Relation, Secret, State
+from ops.testing import CharmEvents, Context, Relation, Secret, State
+from scenario.context import _Event  # needed for custom events for now
 
 from src.charm import ChronyCharm
 from tests.utils import get_csr_common_name
@@ -25,9 +27,11 @@ def test_csr_created_after_nts_certificates_integration(mock_tls_keychain):
     relation = Relation("nts-certificates")
     state_in = State(config={"server-name": "example.com"}, relations=[relation])
 
-    state_out = ctx.run(Event("nts-certificates-relation-created", relation=relation), state_in)
+    state_out = ctx.run(_Event("nts-certificates-relation-created", relation=relation), state_in)
 
-    assert state_out.relations[0].local_unit_data["certificate_signing_requests"]
+    assert typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+        "certificate_signing_requests"
+    ]
 
 
 @pytest.mark.usefixtures("mock_chrony")
@@ -42,9 +46,11 @@ def test_csr_not_created_if_server_name_unset(mock_tls_keychain):
     relation = Relation("nts-certificates")
     state_in = State(relations=[relation])
 
-    state_out = ctx.run(Event("nts-certificates-relation-created", relation=relation), state_in)
+    state_out = ctx.run(_Event("nts-certificates-relation-created", relation=relation), state_in)
 
-    assert "certificate_signing_requests" not in state_out.relations[0].local_unit_data
+    assert "certificate_signing_requests" not in typing.cast(
+        dict, state_out.get_relation(relation.id).local_unit_data
+    )
 
 
 @pytest.mark.usefixtures("mock_chrony")
@@ -59,9 +65,11 @@ def test_csr_created_after_server_name_set(mock_tls_keychain):
     relation = Relation("nts-certificates")
     state_in = State(config={"server-name": "example.com"}, relations=[relation])
 
-    state_out = ctx.run("config-changed", state_in)
+    state_out = ctx.run(CharmEvents.config_changed(), state_in)
 
-    assert state_out.relations[0].local_unit_data["certificate_signing_requests"]
+    assert typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+        "certificate_signing_requests"
+    ]
 
 
 def test_receive_certificate(mock_chrony, helper):
@@ -81,7 +89,7 @@ def test_receive_certificate(mock_chrony, helper):
         config={"server-name": "example.com", "sources": "ntp://example.com"}, relations=[relation]
     )
 
-    ctx.run(Event("nts-certificates-relation-changed", relation=relation), state_in)
+    ctx.run(_Event("nts-certificates-relation-changed", relation=relation), state_in)
 
     assert helper.tls_keychain.get_chain()
     assert len(mock_chrony.read_tls_key_pairs()) == 1
@@ -108,11 +116,15 @@ def test_server_name_reset_after_certificates(mock_chrony, helper):
         config={"sources": "ntp://example.com"}, relations=[relation], secrets=[secret]
     )
 
-    state_out = ctx.run("config-changed", state_in)
+    state_out = ctx.run(CharmEvents.config_changed(), state_in)
 
     assert "ntsservercert" not in mock_chrony.read_config()
     assert not helper.tls_keychain.get_chain()
-    assert not json.loads(state_out.relations[0].local_unit_data["certificate_signing_requests"])
+    assert not json.loads(
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
+    )
 
 
 def test_server_name_change_after_certificate_assigned(mock_chrony, helper):
@@ -135,10 +147,14 @@ def test_server_name_change_after_certificate_assigned(mock_chrony, helper):
         secrets=[helper.get_tls_certificates_secret()],
     )
 
-    state_out = ctx.run("config-changed", state_in)
+    state_out = ctx.run(CharmEvents.config_changed(), state_in)
 
     assert "ntsservercert" in mock_chrony.read_config()
-    csr = json.loads(state_out.relations[0].local_unit_data["certificate_signing_requests"])
+    csr = json.loads(
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
+    )
     assert get_csr_common_name(csr[0]["certificate_signing_request"]) == "example.net"
 
 
@@ -159,8 +175,12 @@ def test_server_name_change_before_certificates_assigned(helper):
         relations=[relation],
     )
 
-    state_out = ctx.run("config-changed", state_in)
-    csr = json.loads(state_out.relations[0].local_unit_data["certificate_signing_requests"])
+    state_out = ctx.run(CharmEvents.config_changed(), state_in)
+    csr = json.loads(
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
+    )
     assert get_csr_common_name(csr[0]["certificate_signing_request"]) == "example.net"
 
 
@@ -175,7 +195,7 @@ def test_certificate_expired(monkeypatch, helper):
     local_unit_data = helper.get_local_unit_data()
     relation = Relation(
         "nts-certificates",
-        local_unit_data=local_unit_data,
+        local_unit_data=copy.deepcopy(local_unit_data),
         remote_app_data=helper.get_remote_app_data(),
     )
     ctx = Context(ChronyCharm)
@@ -187,10 +207,12 @@ def test_certificate_expired(monkeypatch, helper):
     )
 
     monkeypatch.setenv("JUJU_SECRET_REVISION", "0")
-    state_out = ctx.run(Event("secret-expired", secret=secret), state_in)
-
+    state_out = ctx.run(CharmEvents.secret_expired(secret, revision=0), state_in)
+    assert state_out.get_relation(relation.id) is relation
     assert (
-        state_out.relations[0].local_unit_data["certificate_signing_requests"]
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
         != local_unit_data["certificate_signing_requests"]
     )
 
@@ -206,7 +228,7 @@ def test_certificate_revoked(helper):
     local_unit_data = helper.get_local_unit_data()
     relation = Relation(
         "nts-certificates",
-        local_unit_data=local_unit_data,
+        local_unit_data=copy.deepcopy(local_unit_data),
         remote_app_data=helper.get_revoked_remote_app_data(),
     )
     ctx = Context(ChronyCharm)
@@ -217,10 +239,12 @@ def test_certificate_revoked(helper):
         secrets=[secret],
     )
 
-    state_out = ctx.run(relation.changed_event, state_in)
+    state_out = ctx.run(CharmEvents.relation_changed(relation), state_in)
 
     assert (
-        state_out.relations[0].local_unit_data["certificate_signing_requests"]
+        typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
+            "certificate_signing_requests"
+        ]
         != local_unit_data["certificate_signing_requests"]
     )
 
@@ -246,7 +270,7 @@ def test_remove_certificate_integration(mock_chrony, helper):
     )
     assert helper.tls_keychain.get_chain()
 
-    ctx.run(relation.broken_event, state_in)
+    ctx.run(CharmEvents.relation_broken(relation), state_in)
 
     assert not helper.tls_keychain.get_chain()
     assert "ntsservercert" not in mock_chrony.read_config()
@@ -263,15 +287,14 @@ def test_nts_certificates_config(helper):
     secret_id = "secret:user-provided"
     secret = Secret(
         id=secret_id,
-        revision=0,
-        contents={0: {"cert": "test cert", "key": "test key"}},
+        tracked_content={"cert": "test cert", "key": "test key"},
     )
     state_in = State(
         config={"sources": "ntp://example.com", "nts-certificates": secret_id},
         secrets=[secret],
     )
 
-    ctx.run("config-changed", state_in)
+    ctx.run(CharmEvents.config_changed(), state_in)
 
     assert "ntsservercert" in helper.chrony.read_config()
     assert "ntsserverkey" in helper.chrony.read_config()
@@ -299,8 +322,7 @@ def test_nts_certificates_config_with_nts_certificates_integration(helper):
     config_secret_id = "secret:user-provided"
     config_secret = Secret(
         id=config_secret_id,
-        revision=0,
-        contents={0: {"cert": "test cert", "key": "test key"}},
+        tracked_content={"cert": "test cert", "key": "test key"},
     )
     state_in = State(
         config={
@@ -312,7 +334,7 @@ def test_nts_certificates_config_with_nts_certificates_integration(helper):
         secrets=[integration_secret, config_secret],
     )
 
-    ctx.run("config-changed", state_in)
+    ctx.run(CharmEvents.config_changed(), state_in)
 
     assert helper.chrony.read_config().count("ntsservercert") == 2
     assert helper.chrony.read_config().count("ntsserverkey") == 2

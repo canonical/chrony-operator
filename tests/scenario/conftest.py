@@ -77,8 +77,7 @@ class Helper:
         return Secret(
             id="secret:foobar",
             label=f"{tls_certificates.LIBID}-{tls_certificates.get_sha256_hex(self.csr)}",
-            revision=0,
-            contents={0: {"certificate": self.cert, "csr": self.csr}},
+            tracked_content={"certificate": self.cert, "csr": self.csr},
             owner="unit",
         )
 
