@@ -1,30 +1,59 @@
-A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators) 
-for deploying and managing the [Chrony](https://chrony-project.org) NTP server 
+# Chrony Operator
+
+A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators)
+for deploying and managing the [Chrony](https://chrony-project.org) NTP server
 in your systems.
 
-This charm simplifies the configuration and maintenance of `chrony` across a 
-range of environments, enabling basic time provision and synchronization with 
+This charm simplifies the configuration and maintenance of `chrony` across a
+range of environments, enabling basic time provision and synchronization with
 NTP servers.
 
-## Project and community
+Like any Juju charm, this charm supports one-line deployment, configuration, integration, scaling, and more. 
+For Chrony, this includes: 
+* time source management
+* NTS (Network Time Security) and NTS certificate management
+* Enhanced observability and monitoring
 
-The Chrony Operator is a member of the Ubuntu family. It's an
-open source project that warmly welcomes community projects, contributions,
-suggestions, fixes and constructive feedback.
-* [Code of conduct](https://ubuntu.com/community/code-of-conduct)
-* [Get support](https://discourse.charmhub.io/)
-* [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
-* [Contribute](https://charmhub.io/chrony/docs/contributing)
-* [Roadmap](https://charmhub.io/chrony/docs/roadmap)
-Thinking about using the Chrony charm for your next project? [Get in touch](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)!
+The Chrony charm allows for deployment on many different virtualization platforms, from [lxd](https://canonical.com/lxd) to 
+[OpenStack](https://ubuntu.com/openstack) to public cloud offerings.
+
+This charm will make operating Chrony  simple and straightforward for DevOps or SRE teams through Juju's clean interface. 
+
+## In this documentation
+
+|                                                                                                                                           |                                                                                                                              |
+|-------------------------------------------------------------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
+| [Tutorials](https://charmhub.io/chrony/docs/Tutorials)</br>  Get started - a hands-on introduction to using the charm for new users </br> | [How-to guides](https://charmhub.io/chrony/docs/How%20To) </br> Step-by-step guides covering key operations and common tasks |
+| [Reference](https://charmhub.io/chrony/docs/Reference) </br> Technical information - specifications, APIs, architecture                                           | [Explanation](https://charmhub.io/chrony/docs/Explanation) </br> Concepts - discussion and clarification of key topics                               |
 
 ## Contributing to this documentation
 
-Documentation is an important part of this project, and we take the same open-source approach to the documentation as the code. As such, we welcome community contributions, suggestions and constructive feedback on our documentation. Our documentation is hosted on the [Charmhub forum](https://discourse.charmhub.io/) to enable easy collaboration. Please use the "Help us improve this documentation" links on each documentation page to either directly change something you see that's wrong, or ask a question, or make a suggestion about a potential change via the comments section.
+Documentation is an important part of this project, and we take the same open-source approach to the documentation as 
+the code. As such, we welcome community contributions, suggestions and constructive feedback on our documentation. 
+Our documentation is hosted on the [Charmhub forum](https://discourse.charmhub.io/) 
+to enable easy collaboration. Please use the "Help us improve this documentation" links on each documentation page to 
+either directly change something you see that's wrong, ask a question or make a suggestion about a potential change via 
+the comments section.
 
-If there's a particular area of documentation that you'd like to see that's missing, please [file a bug](https://github.com/canonical/chrony-operator/issues).
+If there's a particular area of documentation that you'd like to see that's missing, please 
+[file a bug](https://github.com/canonical/chrony-operator/issues).
 
-# In this documentation
-|                                                            ||
-|------------------------------------------------------------|----------------|
-| [Tutorial](tutorial)</br>  Hands-on introduction to Chrony ||
+## Project and community
+
+The Chrony Operator is a member of the Ubuntu family. It's an open-source project that warmly welcomes community 
+projects, contributions, suggestions, fixes, and constructive feedback.
+
+- [Code of conduct](https://ubuntu.com/community/code-of-conduct)
+- [Get support](https://discourse.charmhub.io/)
+- [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
+- [Contribute](https://github.com/canonical/chrony-operator/blob/main/CONTRIBUTING.md)
+
+Thinking about using the <charm-name> Operator for your next project? 
+[Get in touch](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)!
+
+# Contents
+
+1. [Tutorial](https://charmhub.io/chrony/docs/Tutorials)
+1. [How-to](https://charmhub.io/chrony/docs/How%20To)
+1. [Reference](https://charmhub.io/chrony/docs/Reference)
+1. [Explanation](https://charmhub.io/chrony/docs/Explanation)
