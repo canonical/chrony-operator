@@ -4,17 +4,17 @@ A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators)
 for deploying and managing the [Chrony](https://chrony-project.org) NTP server
 in your systems.
 
-This charm simplifies the configuration and maintenance of `chrony` across a
+This charm simplifies the configuration and maintenance of Chrony across a
 range of environments, enabling basic time provision and synchronization with
 NTP servers.
 
 Like any Juju charm, this charm supports one-line deployment, configuration, integration, scaling, and more. 
 For Chrony, this includes: 
-* time source management
+* Time source management
 * NTS (Network Time Security) and NTS certificate management
 * Enhanced observability and monitoring
 
-The Chrony charm allows for deployment on many different virtualization platforms, from [lxd](https://canonical.com/lxd) to 
+The Chrony charm allows for deployment on many different virtualization platforms, from [LXD](https://canonical.com/lxd) to 
 [OpenStack](https://ubuntu.com/openstack) to public cloud offerings.
 
 This charm will make operating Chrony  simple and straightforward for DevOps or SRE teams through Juju's clean interface. 
@@ -48,7 +48,7 @@ projects, contributions, suggestions, fixes, and constructive feedback.
 - [Join our online chat](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)
 - [Contribute](https://github.com/canonical/chrony-operator/blob/main/CONTRIBUTING.md)
 
-Thinking about using the <charm-name> Operator for your next project? 
+Thinking about using the Chrony Operator for your next project? 
 [Get in touch](https://matrix.to/#/#charmhub-charmdev:ubuntu.com)!
 
 # Contents

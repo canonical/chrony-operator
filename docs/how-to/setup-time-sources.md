@@ -1,15 +1,15 @@
-# How to: Setup Time Sources
+# How to set up time sources
 
 Chrony alone cannot provide time; it requires another time source, either a 
 reference clock or another NTP server, to supply time to Chrony itself. 
-Currently, the Chrony charm supports only using another NTP server as the 
+Currently, the Chrony charm only supports using another NTP server as the 
 time source.
 
-## Use Another NTP Server
+## Use another NTP server
 
 Provide the IP address or domain name of the NTP server to be used as the time 
-source in URL format, for example, `ntp://ntp.example.com`. 
-Pass this URL to the Chrony charm using the `sources` charm configuration. 
+source in URL format, for example, `ntp://ntp.example.com`, and pass this URL to
+the Chrony charm using the `sources` charm configuration. 
 The domain in the URL will be treated as a pool address for the NTP server.
 
 You can adjust the time source using 
@@ -19,7 +19,7 @@ For example, to enable `iburst` and set `maxsources` to 2, use the
 URL `ntp://ntp.example.com?iburst=true&maxsources=2`. 
 The only exception option is NTS, as explained in the next section.
 
-## Use Another NTS Server with NTS Enabled
+## Use another NTS server with NTS enabled
 
 To use another NTS server with NTS enabled for the time source, follow a 
 similar process as using an NTP server but change the protocol to `nts`.

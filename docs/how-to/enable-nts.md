@@ -1,4 +1,4 @@
-# How to: Enable NTS (Network Time Security)
+# How to enable Network Time Security
 
 Network Time Security (NTS) is a mechanism that uses Transport Layer Security
 (TLS) and Authenticated Encryption with Associated Data (AEAD) to provide 
@@ -20,7 +20,7 @@ charms.
 Refer to the respective `tls-certificates` provider charm's documentation 
 for setup instructions. 
 Once set up, you can integrate the `tls-certificates` provider charm with 
-the Chrony charm:
+the Chrony charm using the `juju integrate` command:
 
 ```
 juju integrate chrony:nts-certificates self-signed-certificates
