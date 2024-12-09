@@ -39,5 +39,5 @@ before being passed to the Chrony charm.
 ```
 juju add-secret my-tls-cert cert#file=/path/to/fullchain.pem key#file=/path/to/key.pem
 juju grant-secret my-tls-cert chrony
-juju config chrony nts-certificates=secret:...
+juju config chrony nts-certificates=<output from juju add-secret>
 ```
