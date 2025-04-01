@@ -53,7 +53,7 @@ Thinking about using the Chrony Operator for your next project?
 
 # Contents
 
-1. [Tutorial](./tutorial)
-1. [How-to](./how-to)
+1. [Tutorial]()
+1. [How-to]()
 1. [Reference]()
 1. [Explanation]()
