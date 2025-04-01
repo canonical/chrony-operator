@@ -53,7 +53,7 @@ Thinking about using the Chrony Operator for your next project?
 
 # Contents
 
-1. [Tutorial](https://charmhub.io/chrony/docs/Tutorials)
-1. [How-to](https://charmhub.io/chrony/docs/How%20To)
-1. [Reference](https://charmhub.io/chrony/docs/Reference)
-1. [Explanation](https://charmhub.io/chrony/docs/Explanation)
+1. [Tutorial](https://github.com/canonical/chrony-operator/tree/main/docs/tutorial)
+1. [How-to](https://github.com/canonical/chrony-operator/tree/main/docs/how-to)
+1. [Reference](https://github.com/canonical/chrony-operator/tree/main/docs)
+1. [Explanation](https://github.com/canonical/chrony-operator/tree/main/docs)

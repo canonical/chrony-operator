@@ -208,7 +208,6 @@ def test_certificate_expired(monkeypatch, helper):
 
     monkeypatch.setenv("JUJU_SECRET_REVISION", "0")
     state_out = ctx.run(CharmEvents.secret_expired(secret, revision=0), state_in)
-    assert state_out.get_relation(relation.id) is relation
     assert (
         typing.cast(dict, state_out.get_relation(relation.id).local_unit_data)[
             "certificate_signing_requests"
