@@ -53,7 +53,7 @@ Thinking about using the Chrony Operator for your next project?
 
 # Contents
 
-1. [Tutorial]()
-1. [How-to]()
-1. [Reference]()
-1. [Explanation]()
+1. [Tutorial](https://github.com/canonical/chrony-operator/tree/main/docs/tutorial)
+1. [How-to](https://github.com/canonical/chrony-operator/tree/main/docs/how-to)
+1. [Reference](https://github.com/canonical/chrony-operator/tree/main/docs)
+1. [Explanation](https://github.com/canonical/chrony-operator/tree/main/docs)
