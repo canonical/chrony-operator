@@ -53,7 +53,7 @@ Thinking about using the Chrony Operator for your next project?
 
 # Contents
 
-1. [Tutorial](https://charmhub.io/chrony/docs/Tutorials)
-1. [How-to](https://charmhub.io/chrony/docs/How%20To)
-1. [Reference](https://charmhub.io/chrony/docs/Reference)
-1. [Explanation](https://charmhub.io/chrony/docs/Explanation)
+1. [Tutorial](./tutorial)
+1. [How-to](./how-to)
+1. [Reference]()
+1. [Explanation]()
