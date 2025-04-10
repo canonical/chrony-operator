@@ -2,8 +2,8 @@
 
 [Chrony](https://chrony-project.org/) is a Network Time Protocol (NTP) server for synchronizing system clock across systems.
 
-The charm is a [machine charm](https://documentation.ubuntu.com/juju/latest/reference/charm/index.html#machine). Machine charms runs the software, chrony in this case, in a [juju machine](https://documentation.ubuntu.com/juju/latest/reference/machine/).
-Upon deploying the charm, juju will create a base metal, virtual machine, or system container as the juju machine.
+The charm is a [machine charm](https://documentation.ubuntu.com/juju/latest/reference/charm/index.html#machine). Machine charms runs the software in a [juju machine](https://documentation.ubuntu.com/juju/latest/reference/machine/).
+Upon deploying the charm, juju will create a bare-metal, virtual machine, or system container as the juju machine.
 Juju will add a juju unit for the charm, which will be running the charm code to operate an instance of chrony.
 
 ```mermaid
@@ -34,9 +34,9 @@ Connection to <IP of juju machine> 123 port [udp/ntp] succeeded!
 
 The charm supports metric collection with [Canonical Observability Stack (COS)](https://charmhub.io/topics/canonical-observability-stack).
 
-Once setup the charm will provide a grafana dashboard on the COS instance with stats on chrony, such as NTP packets received, number of NTP connections, etc.
+Once set up, the charm will provide a Grafana dashboard on the COS instance with stats on chrony, such as NTP packets received, number of NTP connections, etc.
 
-As a machine charm, the charm provides `cos-agent` integration which should be integrated with the [grafana agent subordinate charm](https://charmhub.io/grafana-agent). The grafana agent will integrate with a COS instance and transfer the dashboard setup and metrics from the chrony charm to the COS instance.
+As a machine charm, the charm provides `cos-agent` integration which should be integrated with the [Grafana agent subordinate charm](https://charmhub.io/Grafana-agent). The Grafana agent will integrate with a COS instance and transfer the dashboard setup and metrics from the chrony charm to the COS instance.
 
 ## Charm code overview
 
