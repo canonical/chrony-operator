@@ -2,20 +2,20 @@
 
 [Chrony](https://chrony-project.org/) is a Network Time Protocol (NTP) server for synchronizing system clock across systems.
 
-The charm is a [machine charm](https://documentation.ubuntu.com/juju/latest/reference/charm/index.html#machine). Machine charms runs the software in a [juju machine](https://documentation.ubuntu.com/juju/latest/reference/machine/).
-Upon deploying the charm, juju will create a bare-metal, virtual machine, or system container as the juju machine.
-Juju will add a juju unit for the charm, which will be running the charm code to operate an instance of chrony.
+The charm is a [machine charm](https://documentation.ubuntu.com/juju/latest/reference/charm/index.html#machine). Machine charms run the software in a [Juju machine](https://documentation.ubuntu.com/juju/latest/reference/machine/).
+Upon deployment, Juju will create a bare-metal, virtual machine, or system container as the Juju machine.
+Juju will add a Juju unit for the charm, which will be running the charm code to operate an instance of chrony.
 
 ```mermaid
 C4Component
 title Component diagram for Chrony Charm
-Container_Boundary(juju-machine, "juju machine") {
+Container_Boundary(juju-machine, "Juju machine") {
   Component(chonry, "Chrony Service", "", "NTP server")
 }
 ```
 
-Chrony is installed in the juju machine via apt. The chrony service is managed with systemd.
-As a result, if you ssh into the juju machine and run `systemctl status chrony`, you should see the status of the chrony service:
+Chrony is installed in the Juju machine via apt. The chrony service is managed with systemd.
+As a result, if you SSH into the Juju machine and run `systemctl status chrony`, you should see the status of the chrony service:
 
 ```bash
 ● chrony.service - chrony, an NTP client/server
@@ -23,8 +23,8 @@ As a result, if you ssh into the juju machine and run `systemctl status chrony`,
      ...
 ```
 
-After the charm is configured with source, e.g. `juju config chrony sources=ntp://ntp.ubuntu.com`. The charm would become active, and juju should make the `123/udp` port available.
-The `123/udp` port on the juju machine is the used by the chorny service. Running `nc -vzu <IP of juju machine> 123` should result in:
+After the charm is configured with source, e.g. `juju config chrony sources=ntp://ntp.ubuntu.com`, the charm would become active, and Juju should make the `123/udp` port available.
+The `123/udp` port on the Juju machine is the used by the chrony service. Running `nc -vzu <IP of juju machine> 123` should result in:
 
 ```bash
 Connection to <IP of juju machine> 123 port [udp/ntp] succeeded!
