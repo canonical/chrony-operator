@@ -40,7 +40,7 @@ As a machine charm, the charm provides `cos-agent` integration which should be i
 
 ## Charm code overview
 
-The `src/charm.py` is the default entry point for a charm and has the <relevant-charm-class> Python class which inherits
+The `src/charm.py` is the default entry point for a charm and has the `ChronyCharm` Python class which inherits
 from CharmBase. CharmBase is the base class from which all charms are formed, defined
 by [Ops](https://juju.is/docs/sdk/ops) (Python framework for developing charms).
 
@@ -52,7 +52,7 @@ Take, for example, when a configuration is changed by using the CLI.
 
 1. User runs the configuration command:
 ```bash
-juju config <relevant-charm-configuration>
+juju config chrony sources=ntp://ntp.ubuntu.com
 ```
 2. A `config-changed` event is emitted.
 3. In the `__init__` method is defined how to handle this event like this:
