@@ -5,6 +5,7 @@ reference clock or another NTP server, to supply time to Chrony itself.
 Currently, the Chrony charm only supports using another NTP server as the 
 time source.
 
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 ## Use another NTP server
 
 Provide the IP address or domain name of the NTP server to be used as the time 
@@ -19,6 +20,7 @@ For example, to enable `iburst` and set `maxsources` to 2, use the
 URL `ntp://ntp.example.com?iburst=true&maxsources=2`. 
 The only exception option is NTS, as explained in the next section.
 
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 ## Use another NTS server with NTS enabled
 
 To use another NTS server with NTS enabled for the time source, follow a 

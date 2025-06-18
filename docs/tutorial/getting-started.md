@@ -1,4 +1,4 @@
-# Tutorial: Deploy the chrony charm
+# Deploy the chrony charm
 
 ## What you'll do
 This tutorial will walk you through deploying the chrony charm; you will:
@@ -51,7 +51,7 @@ ubuntu@laptop:~$ juju config chrony "sources=ntp://ntp.ubuntu.com?iburst=true"
 Once the source is configured, the chrony charm should enter the active state 
 in the `juju status` table.
 
-## Use the chrony Charm as a Time Source
+## Use the chrony charm as a time source
 You can now use the chrony charm as a time source to set up time synchronisation
 on any servers. 
 Let's try this by creating a LXD virtual machine and installing chrony on the 
@@ -86,6 +86,7 @@ using the exit command.
 root@ntp-client:~# exit
 ```
 
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 ## Enable NTS
 The NTS protocol is a security enhancement over the NTP protocol. 
 It adds authentication to the NTP protocol to prevent time results from being 

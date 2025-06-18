@@ -1,3 +1,4 @@
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 # How to enable Network Time Security
 
 Network Time Security (NTS) is a mechanism that uses Transport Layer Security
