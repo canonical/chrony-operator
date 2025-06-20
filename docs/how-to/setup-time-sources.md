@@ -7,6 +7,7 @@ time source.
 
 <!-- vale Canonical.007-Headings-sentence-case = NO -->
 ## Use another NTP server
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 Provide the IP address or domain name of the NTP server to be used as the time 
 source in URL format, for example, `ntp://ntp.example.com`, and pass this URL to
@@ -22,6 +23,7 @@ The only exception option is NTS, as explained in the next section.
 
 <!-- vale Canonical.007-Headings-sentence-case = NO -->
 ## Use another NTS server with NTS enabled
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 To use another NTS server with NTS enabled for the time source, follow a 
 similar process as using an NTP server but change the protocol to `nts`.

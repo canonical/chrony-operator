@@ -88,6 +88,7 @@ root@ntp-client:~# exit
 
 <!-- vale Canonical.007-Headings-sentence-case = NO -->
 ## Enable NTS
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 The NTS protocol is a security enhancement over the NTP protocol. 
 It adds authentication to the NTP protocol to prevent time results from being 
 tampered with by a malicious actor. 
