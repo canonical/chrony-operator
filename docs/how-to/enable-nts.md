@@ -1,4 +1,6 @@
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 # How to enable Network Time Security
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 Network Time Security (NTS) is a mechanism that uses Transport Layer Security
 (TLS) and Authenticated Encryption with Associated Data (AEAD) to provide 
