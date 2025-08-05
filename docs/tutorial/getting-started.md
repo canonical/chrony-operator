@@ -1,10 +1,10 @@
-# Deploy the chrony charm
+# Deploy the Chrony charm
 
 ## What you'll do
-This tutorial will walk you through deploying the chrony charm; you will:
-1. Deploy and configure the chrony charm
-2. Enable NTS for the chrony charm
-3. Use the chrony charm as a time server
+This tutorial will walk you through deploying the Chrony charm; you will:
+1. Deploy and configure the Chrony charm
+2. Enable NTS for the Chrony charm
+3. Use the Chrony charm as a time server
 
 ## Requirements
 * LXD installed and bootstrapped.
@@ -18,8 +18,8 @@ ubuntu@laptop:~$ juju add-model test-chrony
 ubuntu@laptop:~$ juju set-model-constraints virt-type=virtual-machine
 ```
 
-## Deploy the chrony charm and confirm the chrony charm are deployed
-Deploy the latest chrony charm.
+## Deploy the Chrony charm and confirm the Chrony charm is deployed
+Deploy the latest Chrony charm.
 ```
 ubuntu@laptop:~$ juju deploy chrony --channel latest/edge
 ```
@@ -38,7 +38,7 @@ Machine  State    Address        Inst id        Base          AZ  Message
 0        started  10.81.171.230  juju-728b65-0  ubuntu@24.04      Running
 ```
 
-## Configure the time source for chrony charm
+## Configure the time source for Chrony charm
 We must configure a time source for the Chrony charm so it can serve time to 
 other NTP clients.
 In this example, we will use an upstream NTP server (ntp.ubuntu.com) 
@@ -48,13 +48,13 @@ as the time source and set the iburst option to true for this source.
 ubuntu@laptop:~$ juju config chrony "sources=ntp://ntp.ubuntu.com?iburst=true"
 ```
 
-Once the source is configured, the chrony charm should enter the active state 
+Once the source is configured, the Chrony charm should enter the active state 
 in the `juju status` table.
 
-## Use the chrony charm as a time source
-You can now use the chrony charm as a time source to set up time synchronisation
+## Use the Chrony charm as a time source
+You can now use the Chrony charm as a time source to set up time synchronisation
 on any servers. 
-Let's try this by creating a LXD virtual machine and installing chrony on the 
+Let's try this by creating a LXD virtual machine and installing Chrony on the 
 virtual machine and using it as an NTP client.
 
 ```
@@ -66,9 +66,9 @@ root@ntp-client:~# sudo apt install chrony
 After the installation is complete, modify `/etc/chrony/chrony.conf` inside the
 virtual machine by commenting out all the default NTP sources 
 (lines that start with `pool` or `server`). 
-Then, add the following lines to the configuration file to use the chrony 
+Then, add the following lines to the configuration file to use the Chrony 
 charm as the time source. 
-Make sure to change the chrony charm address in the example (10.81.171.230) 
+Make sure to change the Chrony charm address in the example (10.81.171.230) 
 to the actual address used in your deployment. 
 You can find the correct address using the `juju status` command.
 
@@ -76,7 +76,7 @@ You can find the correct address using the `juju status` command.
 server 10.81.171.230 iburst
 ```
 
-After modifying the chrony configuration file, run `sudo systemctl restart chrony`
+After modifying the Chrony configuration file, run `sudo systemctl restart chrony`
 in the virtual machine to apply changes.
 
 You can exit the virtual machine shell and get back to the host machine
@@ -92,18 +92,18 @@ root@ntp-client:~# exit
 The NTS protocol is a security enhancement over the NTP protocol. 
 It adds authentication to the NTP protocol to prevent time results from being 
 tampered with by a malicious actor. 
-To enable the NTS protocol in the chrony charm, provide a TLS certificate to 
-the chrony charm.
+To enable the NTS protocol in the Chrony charm, provide a TLS certificate to 
+the Chrony charm.
 
-You can either use the `ntp-certificates` configuration of the chrony charm 
+You can either use the `ntp-certificates` configuration of the Chrony charm 
 or a `tls-certificate` provider charm, and providing the certificate via 
 Juju integration.
 In this example, we will use the `self-signed-certificates` charm to provide 
 the TLS certificate. 
 
-Configure the chrony charm's `server-name` configuration with a test value 
+Configure the Chrony charm's `server-name` configuration with a test value 
 (ntp.example.com), as it is required for the `tls-certificate` integration, 
-then deploy the `self-signed-certificates` charm and relate it to the chrony 
+then deploy the `self-signed-certificates` charm and relate it to the Chrony 
 charm.
 
 ```
@@ -113,8 +113,8 @@ ubuntu@laptop:~$ juju integrate chrony self-signed-certificates
 ```
 
 Next, we will retrieve the root certificate from the `self-signed-certificates`
-charm and use it to configure the chrony client to use NTS when communicating 
-with the chrony charm.
+charm and use it to configure the Chrony client to use NTS when communicating 
+with the Chrony charm.
 
 
 ```
@@ -124,22 +124,22 @@ ubuntu@laptop:~$ juju run self-signed-certificates/0 get-ca-certificate | \
 ```
 
 You will need to add an entry to `/etc/hosts` inside the virtual machine with 
-the `server-name` value we just set and the IP address of the chrony charm.
+the `server-name` value we just set and the IP address of the Chrony charm.
 
 ```
 10.81.171.230 ntp.example.com
 ```
 
-After that, enable NTS in the chrony client configuration and restart the 
-chrony client inside the virtual machine.
+After that, enable NTS in the Chrony client configuration and restart the 
+Chrony client inside the virtual machine.
 
 ```
 server ntp.example.com nts iburst certset 1
 ntstrustedcerts 1 /etc/chrony/nts.crt
 ```
 
-Wait a few seconds, and you should see that the chrony client is synchronised 
-with the chrony charm.
+Wait a few seconds, and you should see that the Chrony client is synchronised 
+with the Chrony charm.
 
 ```
 ubuntu@laptop:~$ lxc exec ntp-client chronyc tracking

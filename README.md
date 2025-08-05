@@ -1,4 +1,4 @@
-# Chrony Charm
+# Chrony charm
 
 [![CharmHub Badge](https://charmhub.io/chrony/badge.svg)](https://charmhub.io/chrony)
 [![Publish to edge](https://github.com/canonical/chrony-operator/actions/workflows/publish_charm.yaml/badge.svg)](https://github.com/canonical/chrony-operator/actions/workflows/publish_charm.yaml)
