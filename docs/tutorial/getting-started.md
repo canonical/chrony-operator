@@ -1,4 +1,6 @@
+<!-- vale Canonical.007-Headings-sentence-case = NO -->
 # Deploy the Chrony charm
+<!-- vale Canonical.007-Headings-sentence-case = YES -->
 
 ## What you'll do
 This tutorial will walk you through deploying the Chrony charm; you will:
