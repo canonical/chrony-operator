@@ -1,4 +1,4 @@
-# Chrony Operator
+# Chrony charm
 
 A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators)
 for deploying and managing the [Chrony](https://chrony-project.org) NTP server
