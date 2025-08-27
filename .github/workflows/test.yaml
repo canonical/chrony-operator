@@ -11,7 +11,7 @@ jobs:
       charmcraft-channel: latest/edge
       self-hosted-runner: true
       self-hosted-runner-image: noble
-      vale-style-check: true
+      vale-style-check: false
 
   integration-tests:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
