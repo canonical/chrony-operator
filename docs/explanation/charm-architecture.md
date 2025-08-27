@@ -36,7 +36,7 @@ The charm supports metric collection with [Canonical Observability Stack (COS)](
 
 Once set up, the charm will provide a Grafana dashboard on the COS instance with stats on chrony, such as NTP packets received, number of NTP connections, etc.
 
-As a machine charm, the charm provides `cos-agent` relation which should be integrated with the [Grafana agent subordinate charm](https://charmhub.io/Grafana-agent). The Grafana agent will integrate with a COS instance and transfer the dashboard setup and metrics from the chrony charm to the COS instance.
+As a machine charm, the charm provides `cos-agent` relation which should be integrated with the [Grafana agent subordinate charm](https://charmhub.io/grafana-agent). The Grafana agent will integrate with a COS instance and transfer the dashboard setup and metrics from the chrony charm to the COS instance.
 
 ## Charm code overview
 
