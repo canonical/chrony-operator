@@ -1,6 +1,6 @@
 # Chrony charm
 
-A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators)
+A [Juju](https://juju.is/) [charm](https://documentation.ubuntu.com/juju/3.6/reference/charm/)
 for deploying and managing the [Chrony](https://chrony-project.org) NTP server
 in your systems.
 

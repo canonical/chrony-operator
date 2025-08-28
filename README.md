@@ -5,7 +5,7 @@
 [![Promote charm](https://github.com/canonical/chrony-operator/actions/workflows/promote_charm.yaml/badge.svg)](https://github.com/canonical/chrony-operator/actions/workflows/promote_charm.yaml)
 [![Discourse Status](https://img.shields.io/discourse/status?server=https%3A%2F%2Fdiscourse.charmhub.io&style=flat&label=CharmHub%20Discourse)](https://discourse.charmhub.io)
 
-A [Juju](https://juju.is/) [charm](https://juju.is/docs/olm/charmed-operators)
+A [Juju](https://juju.is/) [charm](https://documentation.ubuntu.com/juju/3.6/reference/charm/)
 for deploying and managing the [Chrony](https://chrony-project.org) NTP server 
 in your systems.
 
@@ -18,7 +18,7 @@ In this section, we will deploy the Chrony charm, which can be used as a time so
 You’ll need a workstation, e.g., a laptop, with sufficient resources to launch a virtual machine with 4 CPUs, 8 GB RAM, and 50 GB disk space.
 
 ### Set up
-You can follow the tutorial [here](https://juju.is/docs/juju/set-up--tear-down-your-test-environment#heading--set-up-automatically) to set up a test environment for Juju with LXD.
+You can follow the tutorial [here](https://documentation.ubuntu.com/juju/3.6/howto/manage-your-juju-deployment/set-up-your-juju-deployment-local-testing-and-development/) to set up a test environment for Juju with LXD.
 
 ### Deploy
 From inside the virtual machine, deploy the Chrony charm using the `juju deploy` command.
