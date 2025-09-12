@@ -42,7 +42,7 @@ As a machine charm, the charm provides `cos-agent` relation which should be inte
 
 The `src/charm.py` is the default entry point for a charm and has the `ChronyCharm` Python class which inherits
 from CharmBase. CharmBase is the base class from which all charms are formed, defined
-by [Ops](https://juju.is/docs/sdk/ops) (Python framework for developing charms).
+by [Ops](https://documentation.ubuntu.com/ops/latest/) (Python framework for developing charms).
 
 > See more in the Juju docs: [Charm](https://documentation.ubuntu.com/juju/latest/user/reference/charm/)
 
