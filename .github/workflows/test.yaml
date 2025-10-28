@@ -20,3 +20,8 @@ jobs:
       charmcraft-channel: latest/edge
       provider: lxd
       juju-channel: 3.3/stable
+  allure-report:
+    if: always() && !cancelled()
+    needs:
+      - integration-tests
+    uses: canonical/operator-workflows/.github/workflows/allure_report.yaml@main
