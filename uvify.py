@@ -1,9 +1,15 @@
 import copy
 import fnmatch
+import json
 import pathlib
 import shlex
+import re
+import subprocess
+import tempfile
 import typing
 import configparser
+
+import pyproject_fmt
 import tomlkit
 import tox_toml_fmt
 import yaml
@@ -52,7 +58,13 @@ def equal_mapping_value(path: str, value: ValueType) -> tuple[str, ValueType]:
     return path, mapping
 
 
+def remove_comments(string: str) -> str:
+    no_comments = re.sub("(?<!\\\\)#.+$", "", string, flags=re.M)
+    return no_comments.replace("\\#", "#")
+
+
 def newline_separated_list_value(path: str, value: ValueType) -> tuple[str, ValueType]:
+    value = remove_comments(value)
     value = value.replace("\\\n", " ")
     return path, [v.strip() for v in value.splitlines() if v.strip()]
 
@@ -66,7 +78,7 @@ def command_lines_value(path: str, value: ValueType) -> tuple[str, ValueType]:
 def move_up(n) -> Transformer:
     def move_func(path: str, value: ValueType) -> tuple[str, ValueType]:
         path = path.split("/")
-        path = ["", *path[1 + n :]]
+        path = ["", *path[1 + n:]]
         path = "/".join(path)
         return path, value
 
@@ -143,6 +155,7 @@ def unflatten(obj: dict) -> dict:
         cursor[keys[-1]] = value.as_dict() if isinstance(value, Mapping) else value
     return result
 
+
 def load_ini_file(file):
     tox_ini = configparser.ConfigParser()
     tox_ini.read(file)
@@ -154,7 +167,9 @@ def load_ini_file(file):
     return tox_config
 
 
-def convert_to_toml(source, destination):
+def convert_to_toml(source: pathlib.Path, destination: pathlib.Path):
+    source = pathlib.Path(source)
+    destination = pathlib.Path(destination)
     tox_config = load_ini_file(source)
     flatten_tox_config = flatten(tox_config)
     vars = tox_config["vars"]
@@ -180,7 +195,8 @@ def convert_to_toml(source, destination):
         if not transformed:
             raise ValueError(f"unknown key: {key}")
     tomlkit.dump(unflatten(transformed_tox_config), open(destination, "w"))
-    tox_toml_fmt.run([destination, "-n"])
+    tox_toml_fmt.run([str(destination), "-n"])
+    source.unlink()
 
 
 def migrate_tox_toml(project: pathlib.Path):
@@ -196,11 +212,32 @@ def load_requirements_txt(path: pathlib.Path) -> list[str]:
     requirements = []
     for requirement in parse_requirements(str(path.resolve()), session=PipSession()):
         requirements.append(requirement.requirement)
-    return requirements
+    resolved_requirements = []
+    for requirement in requirements:
+        if not requirement.startswith("git+"):
+            resolved_requirements.append(requirement)
+            continue
+        with tempfile.NamedTemporaryFile(dir=path.parent, suffix=".txt", mode="r") as tmp:
+            subprocess.check_call(
+                ["pip", "install", requirement, "--dry-run", "--report", tmp.name, "--ignore-installed"],
+                stdout=subprocess.DEVNULL)
+            report = json.loads(tmp.read())
+            resolved_package_name = report["install"][0]["metadata"]["name"]
+            resolved_requirements.append(f"{resolved_package_name} @ {requirement}")
+    return resolved_requirements
 
 
-def extract_dependency_groups(tox_path: pathlib.Path) -> list[str]:
-
+def extract_dependency_groups(project: pathlib.Path) -> dict[str, list[str]]:
+    tox_toml = project / "tox.toml"
+    tox_config = tomlkit.loads(tox_toml.read_text())
+    env_deps = {}
+    for env, env_config in tox_config["env"].items():
+        deps = [dep.replace("{toxinidir}", str(project)) for dep in env_config["deps"]]
+        with tempfile.NamedTemporaryFile(dir=project.parent, suffix=".txt", mode="w+") as tmp:
+            tmp.write("\n".join(deps))
+            tmp.flush()
+            env_deps[env] = load_requirements_txt(tmp.name)
+    return env_deps
 
 
 def migrate_uv(project: pathlib.Path):
@@ -217,19 +254,6 @@ def migrate_uv(project: pathlib.Path):
     else:
         name = charmcraft["name"]
         summary = charmcraft["summary"]
-    """
-    [project]
-    name = "pollen-operator"
-    version = "1.0.0"
-    description = "A Juju charm deploying and managing Pollen on a machine."
-    readme = "README.md"
-    requires-python = ">=3.10"
-    dependencies = [
-        "ops~=3.0",
-        "pydantic~=2.11",
-        "cosl~=1.0",
-    ]
-    """
     python_version = "3.12"
     for ubuntu_version, python_version in [("20.04", "3.8"), ("22.04", "3.10")]:
         if ubuntu_version in charmcraft_file.read_text():
@@ -243,9 +267,21 @@ def migrate_uv(project: pathlib.Path):
         "dependencies": load_requirements_txt(project / "requirements.txt"),
     }
     pyproject["tool"]["black"]["target-version"] = ["py" + python_version.replace(".", "")]
-    pyproject["tool"]["uv"] = {"package": "false"}
+    pyproject["tool"]["uv"] = {"package": False}
+    pyproject["dependency-groups"] = extract_dependency_groups(project)
+    pyproject["tool"]["codespell"] = {
+        "skip": "build,lib,venv,icon.svg,.tox,.git,.mypy_cache,.ruff_cache,.coverage,htmlcov,uv.lock"}
+    tox_toml = project / "tox.toml"
+    tox_config = tomlkit.loads(tox_toml.read_text())
+    for env, env_config in tox_config["env"].items():
+        del env_config["deps"]
+        env_config["dependency_groups"] = [env]
+    tox_config["env_run_base"]["runner"] = "uv-venv-lock-runner"
+    pyproject_file.write_text(tomlkit.dumps(pyproject))
+    tox_toml.write_text(tomlkit.dumps(tox_config))
+    tox_toml_fmt.run([str(tox_toml), "-n"])
+    pyproject_fmt.run([str(pyproject_file), "-n"])
 
-    print(tomlkit.dumps(pyproject))
 
-
-migrate_uv(".")
+convert_to_toml("tox.ini", "tox.toml")
+migrate_uv(pathlib.Path("."))
