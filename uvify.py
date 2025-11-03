@@ -17,7 +17,7 @@ from pip._internal.req import parse_requirements
 from pip._internal.network.session import PipSession
 
 
-class Mapping:
+class AtomMapping:
     def __init__(self):
         self._container = {}
 
@@ -31,7 +31,7 @@ class Mapping:
         return self._container
 
 
-ValueType = bool | int | str | list[bool | int | str | list[str]] | Mapping
+ValueType = bool | int | str | list[bool | int | str | list[str]] | AtomMapping
 Transformer = typing.Callable[[str, ValueType], tuple[str, ValueType]]
 
 
@@ -51,7 +51,7 @@ def comma_separated_list_value(path: str, value: ValueType) -> tuple[str, ValueT
 
 def equal_mapping_value(path: str, value: ValueType) -> tuple[str, ValueType]:
     lines = [v.strip() for v in value.splitlines() if v.strip()]
-    mapping = Mapping()
+    mapping = AtomMapping()
     for line in lines:
         key, value = line.split("=", maxsplit=1)
         mapping[key.strip()] = value.strip()
@@ -152,7 +152,7 @@ def unflatten(obj: dict) -> dict:
             else:
                 cursor[key] = {}
                 cursor = cursor[key]
-        cursor[keys[-1]] = value.as_dict() if isinstance(value, Mapping) else value
+        cursor[keys[-1]] = value.as_dict() if isinstance(value, AtomMapping) else value
     return result
 
 
