@@ -78,7 +78,7 @@ def command_lines_value(path: str, value: ValueType) -> tuple[str, ValueType]:
 def move_up(n) -> Transformer:
     def move_func(path: str, value: ValueType) -> tuple[str, ValueType]:
         path = path.split("/")
-        path = ["", *path[1 + n:]]
+        path = ["", *path[1 + n :]]
         path = "/".join(path)
         return path, value
 
@@ -219,8 +219,17 @@ def load_requirements_txt(path: pathlib.Path) -> list[str]:
             continue
         with tempfile.NamedTemporaryFile(dir=path.parent, suffix=".txt", mode="r") as tmp:
             subprocess.check_call(
-                ["pip", "install", requirement, "--dry-run", "--report", tmp.name, "--ignore-installed"],
-                stdout=subprocess.DEVNULL)
+                [
+                    "pip",
+                    "install",
+                    requirement,
+                    "--dry-run",
+                    "--report",
+                    tmp.name,
+                    "--ignore-installed",
+                ],
+                stdout=subprocess.DEVNULL,
+            )
             report = json.loads(tmp.read())
             resolved_package_name = report["install"][0]["metadata"]["name"]
             resolved_requirements.append(f"{resolved_package_name} @ {requirement}")
@@ -270,7 +279,8 @@ def migrate_uv(project: pathlib.Path):
     pyproject["tool"]["uv"] = {"package": False}
     pyproject["dependency-groups"] = extract_dependency_groups(project)
     pyproject["tool"]["codespell"] = {
-        "skip": "build,lib,venv,icon.svg,.tox,.git,.mypy_cache,.ruff_cache,.coverage,htmlcov,uv.lock"}
+        "skip": "build,lib,venv,icon.svg,.tox,.git,.mypy_cache,.ruff_cache,.coverage,htmlcov,uv.lock"
+    }
     tox_toml = project / "tox.toml"
     tox_config = tomlkit.loads(tox_toml.read_text())
     for env, env_config in tox_config["env"].items():
