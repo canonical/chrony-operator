@@ -6,15 +6,16 @@ import shlex
 import re
 import subprocess
 import tempfile
+import textwrap
 import typing
 import configparser
 
 import pyproject_fmt
 import tomlkit
 import tox_toml_fmt
-import yaml
 from pip._internal.req import parse_requirements
 from pip._internal.network.session import PipSession
+import ruamel.yaml
 
 
 class AtomMapping:
@@ -254,10 +255,12 @@ def migrate_uv(project: pathlib.Path):
     pyproject_file = project / "pyproject.toml"
     pyproject = tomlkit.loads(pyproject_file.read_text())
     charmcraft_file = project / "charmcraft.yaml"
-    charmcraft = yaml.safe_load(charmcraft_file.read_text())
+    yaml = ruamel.yaml.YAML()
+    yaml.default_flow_style = True
+    charmcraft = yaml.load(charmcraft_file.read_text())
     metadata_file = project / "metadata.yaml"
     if metadata_file.exists():
-        metadata = yaml.safe_load((project / "metadata.yaml").read_text())
+        metadata = yaml.load((project / "metadata.yaml").read_text())
         name = metadata["name"]
         summary = metadata["summary"]
     else:
@@ -291,6 +294,15 @@ def migrate_uv(project: pathlib.Path):
     tox_toml.write_text(tomlkit.dumps(tox_config))
     tox_toml_fmt.run([str(tox_toml), "-n"])
     pyproject_fmt.run([str(pyproject_file), "-n"])
+    requirements_file = project / "requirements.txt"
+    requirements_file.unlink()
+    charmcraft["parts"]["charm"] = yaml.load(textwrap.dedent("""
+    source: .
+    plugin: uv
+    build-snaps:
+      - astral-uv
+    """))
+    yaml.dump(charmcraft, charmcraft_file.open("w"))
 
 
 convert_to_toml("tox.ini", "tox.toml")
