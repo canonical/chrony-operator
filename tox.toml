@@ -88,7 +88,7 @@ commands = [
     "--tb",
     "native",
     "-s",
-    "{posargs}",
+    { replace = "posargs", extend = "true" },
   ],
   [
     "coverage",
@@ -119,7 +119,7 @@ commands = [
     "--ignore={[vars]tst_path}scenario",
     "--log-cli-level=INFO",
     "-s",
-    "{posargs}",
+    { replace = "posargs", extend = "true" },
   ],
 ]
 dependency_groups = [ "integration" ]

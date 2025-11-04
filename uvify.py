@@ -72,7 +72,18 @@ def newline_separated_list_value(path: str, value: ValueType) -> tuple[str, Valu
 
 def command_lines_value(path: str, value: ValueType) -> tuple[str, ValueType]:
     path, value = newline_separated_list_value(path, value)
-    commands = [shlex.split(line) for line in value if not line.startswith("#")]
+    commands = [
+        [
+            (
+                part
+                if part != "{posargs}"
+                else {"replace": "posargs", "extend": "true"}
+            )
+            for part in shlex.split(line)
+        ]
+        for line in value
+        if not line.startswith("#")
+    ]
     return path, commands
 
 
@@ -296,12 +307,16 @@ def migrate_uv(project: pathlib.Path):
     pyproject_fmt.run([str(pyproject_file), "-n"])
     requirements_file = project / "requirements.txt"
     requirements_file.unlink()
-    charmcraft["parts"]["charm"] = yaml.load(textwrap.dedent("""
+    charmcraft["parts"]["charm"] = yaml.load(
+        textwrap.dedent(
+            """
     source: .
     plugin: uv
     build-snaps:
       - astral-uv
-    """))
+    """
+        )
+    )
     yaml.dump(charmcraft, charmcraft_file.open("w"))
 
 
