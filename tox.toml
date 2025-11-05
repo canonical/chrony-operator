@@ -20,32 +20,8 @@ dependency_groups = [ "fmt" ]
 description = "Check code against coding style standards"
 commands = [
   [
-    "pydocstyle",
-    "{[vars]src_path}",
-  ],
-  [
     "codespell",
     "{toxinidir}",
-    "--skip",
-    "{toxinidir}/.git",
-    "--skip",
-    "{toxinidir}/.tox",
-    "--skip",
-    "{toxinidir}/build",
-    "--skip",
-    "{toxinidir}/lib",
-    "--skip",
-    "{toxinidir}/venv",
-    "--skip",
-    "{toxinidir}/.mypy_cache",
-    "--skip",
-    "{toxinidir}/icon.svg",
-  ],
-  [
-    "pflake8",
-    "{[vars]src_path}",
-    "{[vars]tst_path}",
-    "--ignore=W503",
   ],
   [
     "isort",
@@ -67,7 +43,8 @@ commands = [
     "{[vars]tst_path}",
   ],
   [
-    "pylint",
+    "ruff",
+    "check",
     "{[vars]src_path}",
     "{[vars]tst_path}",
   ],

@@ -74,11 +74,7 @@ def command_lines_value(path: str, value: ValueType) -> tuple[str, ValueType]:
     path, value = newline_separated_list_value(path, value)
     commands = [
         [
-            (
-                part
-                if part != "{posargs}"
-                else {"replace": "posargs", "extend": "true"}
-            )
+            (part if part != "{posargs}" else {"replace": "posargs", "extend": "true"})
             for part in shlex.split(line)
         ]
         for line in value
@@ -320,5 +316,35 @@ def migrate_uv(project: pathlib.Path):
     yaml.dump(charmcraft, charmcraft_file.open("w"))
 
 
-convert_to_toml("tox.ini", "tox.toml")
-migrate_uv(pathlib.Path("."))
+def migrate_ruff(project: pathlib.Path):
+    project = pathlib.Path(project)
+    pyproject_file = project / "pyproject.toml"
+    pyproject = tomlkit.loads(pyproject_file.read_text())
+    pyproject["tool"]["ruff"] = {"lint": {"pydocstyle": {"convention": "pep257"}}}
+    pyproject["dependency-groups"]["lint"] = sorted(["ruff", *[
+        dep
+        for dep in pyproject["dependency-groups"]["lint"]
+        if "flake" not in dep and "pydocstyle" not in dep and "pylint" not in dep
+    ]])
+    tox_file = project / "tox.toml"
+    tox_config = tomlkit.loads(tox_file.read_text())
+    tox_config["env"]["lint"] = {
+        "description": "Check code against coding style standards",
+        "commands": [
+            ["codespell", "{toxinidir}"],
+            ["isort", "--check-only", "--diff", "{[vars]src_path}", "{[vars]tst_path}"],
+            ["black", "--check", "--diff", "{[vars]src_path}", "{[vars]tst_path}"],
+            ["mypy", "{[vars]src_path}", "{[vars]tst_path}"],
+            ["ruff", "check", "{[vars]src_path}", "{[vars]tst_path}"],
+        ],
+        "dependency_groups": ["lint"],
+    }
+    tox_file.write_text(tomlkit.dumps(tox_config))
+    pyproject_file.write_text(tomlkit.dumps(pyproject))
+    tox_toml_fmt.run([str(tox_file), "-n"])
+    pyproject_fmt.run([str(pyproject_file), "-n"])
+
+
+# convert_to_toml("tox.ini", "tox.toml")
+# migrate_uv(pathlib.Path("."))
+migrate_ruff(".")
