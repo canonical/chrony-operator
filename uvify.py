@@ -32,7 +32,7 @@ class AtomMapping:
         return self._container
 
 
-ValueType = bool | int | str | list[bool | int | str | list[str]] | AtomMapping
+ValueType = bool | int | str | AtomMapping | list[bool | int | str | list[str] | AtomMapping]
 Transformer = typing.Callable[[str, ValueType], tuple[str, ValueType]]
 
 
