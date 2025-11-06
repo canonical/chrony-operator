@@ -175,7 +175,7 @@ def load_ini_file(file):
     return tox_config
 
 
-def convert_to_toml(project: pathlib.Path):
+def migrate_tox_toml(project: pathlib.Path):
     project = pathlib.Path(project)
     source = project / "tox.ini"
     destination = project / "tox.toml"
@@ -212,7 +212,7 @@ def migrate_tox_toml(project: pathlib.Path):
     project = pathlib.Path(project)
     ini_file = project / "tox.ini"
     toml_file = project / "tox.toml"
-    convert_to_toml(ini_file, toml_file)
+    migrate_tox_toml(ini_file, toml_file)
     ini_file.unlink()
 
 
@@ -365,6 +365,6 @@ def migrate_ruff(project: pathlib.Path):
     pyproject_fmt.run([str(pyproject_file), "-n"])
 
 
-convert_to_toml(".")
+migrate_tox_toml(".")
 migrate_uv(".")
 migrate_ruff(".")
