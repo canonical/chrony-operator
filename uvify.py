@@ -175,9 +175,10 @@ def load_ini_file(file):
     return tox_config
 
 
-def convert_to_toml(source: pathlib.Path, destination: pathlib.Path):
-    source = pathlib.Path(source)
-    destination = pathlib.Path(destination)
+def convert_to_toml(project: pathlib.Path):
+    project = pathlib.Path(project)
+    source = project / "tox.ini"
+    destination = project / "tox.toml"
     tox_config = load_ini_file(source)
     flatten_tox_config = flatten(tox_config)
     vars = tox_config["vars"]
@@ -306,13 +307,27 @@ def migrate_uv(project: pathlib.Path):
     charmcraft["parts"]["charm"] = yaml.load(
         textwrap.dedent(
             """
-    source: .
-    plugin: uv
-    build-snaps:
-      - astral-uv
-    """
+            source: .
+            plugin: uv
+            build-snaps:
+              - astral-uv
+            """
         )
     )
+    for script_dir in ("script", "scripts"):
+        script_path = project / script_dir
+        if script_path.exists():
+            charmcraft["parts"]["dump"] = yaml.load(
+                textwrap.dedent(
+                    f"""
+                    plugin: dump
+                    source: .
+                    stage:
+                      - {script_dir}
+                    """
+                )
+            )
+            break
     yaml.dump(charmcraft, charmcraft_file.open("w"))
 
 
@@ -321,11 +336,16 @@ def migrate_ruff(project: pathlib.Path):
     pyproject_file = project / "pyproject.toml"
     pyproject = tomlkit.loads(pyproject_file.read_text())
     pyproject["tool"]["ruff"] = {"lint": {"pydocstyle": {"convention": "pep257"}}}
-    pyproject["dependency-groups"]["lint"] = sorted(["ruff", *[
-        dep
-        for dep in pyproject["dependency-groups"]["lint"]
-        if "flake" not in dep and "pydocstyle" not in dep and "pylint" not in dep
-    ]])
+    pyproject["dependency-groups"]["lint"] = sorted(
+        [
+            "ruff",
+            *[
+                dep
+                for dep in pyproject["dependency-groups"]["lint"]
+                if "flake" not in dep and "pydocstyle" not in dep and "pylint" not in dep
+            ],
+        ]
+    )
     tox_file = project / "tox.toml"
     tox_config = tomlkit.loads(tox_file.read_text())
     tox_config["env"]["lint"] = {
@@ -345,6 +365,6 @@ def migrate_ruff(project: pathlib.Path):
     pyproject_fmt.run([str(pyproject_file), "-n"])
 
 
-# convert_to_toml("tox.ini", "tox.toml")
-# migrate_uv(pathlib.Path("."))
+convert_to_toml(".")
+migrate_uv(".")
 migrate_ruff(".")
