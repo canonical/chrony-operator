@@ -12,6 +12,7 @@ jobs:
       self-hosted-runner: true
       self-hosted-runner-image: noble
       vale-style-check: false
+      with-uv: true
 
   integration-tests:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
@@ -20,6 +21,8 @@ jobs:
       charmcraft-channel: latest/edge
       provider: lxd
       juju-channel: 3.3/stable
+      with-uv: true
+
   allure-report:
     if: always() && !cancelled()
     needs:
