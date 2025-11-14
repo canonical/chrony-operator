@@ -388,7 +388,9 @@ class Uvify:
                 pinned_requirements.append(requirement)
                 continue
             for installed_req in installed:
-                if installed_req["metadata"]["name"].lower().replace("_", "-") == req.name.lower().replace("_", "-"):
+                if installed_req["metadata"]["name"].lower().replace(
+                    "_", "-"
+                ) == req.name.lower().replace("_", "-"):
                     version = installed_req["metadata"]["version"]
                     pinned_requirements.append(f"{req.name}=={version}")
                     break
@@ -479,9 +481,10 @@ class Uvify:
         ]
         dump_dir = [d for d in dump_dir if d.exists()]
         if dump_dir:
+            dump_part_name = dump_dir[0].name if len(dump_dir) == 1 else "dump"
             dump_part_text = textwrap.dedent(
                 f"""
-                plugin: dump
+                plugin: {dump_part_name}
                 source: .
                 stage:
                 """
@@ -489,7 +492,9 @@ class Uvify:
             for dump in dump_dir:
                 dump_part_text += f"  - {dump.name}\n"
             self.charmcraft["parts"]["dump"] = self.yaml.load(dump_part_text)
-        self.licenserc_yaml["header"]["paths-ignore"].append(self.yaml.load("'uv.lock'"))
+        self.licenserc_yaml["header"]["paths-ignore"].append(
+            self.yaml.load("'uv.lock'")
+        )
 
     def migrate_ruff(self):
         ruff_config = {
@@ -635,7 +640,8 @@ class Uvify:
                     "ruff",
                     "check",
                     "--fix",
-                    "--fix-only",
+                    "--select",
+                    "I",
                     {
                         "replace": "ref",
                         "of": [
@@ -661,12 +667,33 @@ class Uvify:
             "dependency_groups": ["fmt"],
         }
 
+        self.tox_toml["env"]["lint-fix"] = {
+            "description": "Apply coding style standards to code",
+            "commands": [
+                [
+                    "ruff",
+                    "check",
+                    "--fix",
+                    "--fix-only",
+                    {
+                        "replace": "ref",
+                        "of": [
+                            "vars",
+                            "all_path",
+                        ],
+                        "extend": True,
+                    },
+                ],
+            ],
+            "dependency_groups": ["lint"],
+        }
+
         self.tox_toml["env"].pop("src-docs", None)
         self.pyproject["dependency-groups"].pop("src-docs", None)
         self.pyproject["dependency-groups"]["fmt"] = ["ruff"]
 
     def _add_license(self, file: pathlib.Path):
-        if file.read_text().startswith("# Copyright 2025 Canonical Ltd."):
+        if file.read_text().startswith("# Copyright"):
             return
         header = textwrap.dedent(
             """\
@@ -684,7 +711,8 @@ class Uvify:
         tox_toml_fmt.run([str(self.tox_toml_file), "-n"])
         pyproject_fmt.run([str(self.pyproject_file), "-n"])
         subprocess.check_call(
-            ["/snap/bin/uv", "tool", "run", "tox", "-e", "fmt"], cwd=self.project
+            ["/snap/bin/uv", "tool", "run", "tox", "-e", "fmt,lint-fix"],
+            cwd=self.project,
         )
 
     def _sync(self):
@@ -721,7 +749,7 @@ class Uvify:
         self._format()
 
 
-project = "../synapse-operator"
+project = "../wireguard-gateway-operator"
 Uvify.reset(project)
 u = Uvify(project)
 u.conflicts = [
