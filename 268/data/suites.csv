@@ -1,0 +1,26 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"
+    arrange: set up the chrony charm with a specific NTP source configuration.
+    act: deploy the chrony charm and wait for it to reach the 'active' state.
+    assert: ensure the application transitions to 'active' status after deployment.
+    ","","test_build_and_deploy","tests.integration","","unknown","","","test_charm","",""
+"
+    arrange: deploy the chrony charm.
+    act: request chrony_exporter metrics endpoint.
+    assert: confirm that metrics are scraped.
+    ","","test_chrony_exporter","tests.integration","","unknown","","","test_charm","",""
+"
+    arrange: deploy the chrony charm.
+    act: update chrony charm config to use a user supplied TLS certificate.
+    assert: confirm that the SANs in the retrieved certificates match configured server name.
+    ","","test_nts_certificates_configuration","tests.integration","","unknown","","","test_charm","",""
+"
+    arrange: set up the chrony charm with a specific NTP source configuration.
+    act: send a simple NTPv4 request to each unit.
+    assert: ensure each unit responds correctly to the NTP request.
+    ","","test_ntp_server","tests.integration","","unknown","","","test_charm","",""
+"
+    arrange: relate with self-signed-certificate application.
+    act: update chrony charm config to use different server names.
+    assert: confirm that the SANs in the retrieved certificates match configured server name.
+    ","","test_nts_certificates_integration","tests.integration","","unknown","","","test_charm","",""
