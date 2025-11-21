@@ -24,18 +24,11 @@ commands = [
     "{toxinidir}",
   ],
   [
-    "isort",
-    "--check-only",
-    "--diff",
-    "{[vars]src_path}",
-    "{[vars]tst_path}",
-  ],
-  [
-    "black",
+    "ruff",
+    "format",
     "--check",
     "--diff",
-    "{[vars]src_path}",
-    "{[vars]tst_path}",
+    { replace = "ref", of = ["vars", "all_path"], extend = true }
   ],
   [
     "mypy",
@@ -104,3 +97,4 @@ dependency_groups = [ "integration" ]
 [vars]
 src_path = "{toxinidir}/src/"
 tst_path = "{toxinidir}/tests/"
+all_path = ["{toxinidir}/src/", "{toxinidir}/tests/"]

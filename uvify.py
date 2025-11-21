@@ -1,6 +1,7 @@
 import ast
 import copy
 import fnmatch
+import functools
 import json
 import logging
 import pathlib
@@ -15,6 +16,8 @@ import typing
 import configparser
 
 import pyproject_fmt
+import requests
+import tomli_w
 import tomlkit
 import tox_toml_fmt
 import yaml
@@ -188,7 +191,7 @@ def unflatten(obj: dict) -> dict:
 
 
 class Uvify:
-    def __init__(self, project: pathlib.Path | str):
+    def __init__(self, project: pathlib.Path | str, conflict_envs=None):
         self.project = pathlib.Path(project)
         self.charmcraft_file = self.project / "charmcraft.yaml"
         self.yaml = ruamel.yaml.YAML()
@@ -214,7 +217,9 @@ class Uvify:
         self.python_version = self._get_python_version()
         self.dependencies = self._load_dependencies()
         self.dependency_groups = self._load_dependency_groups()
-        self.conflicts = []
+        self.conflicts = (
+            [] if not conflict_envs else [[{"group": c} for c in conflict_envs]]
+        )
 
     def _parse_tox_vars(self):
         tox_vars = {}
@@ -704,16 +709,114 @@ class Uvify:
         )
         file.write_text(header + file.read_text())
 
+    @staticmethod
+    def _render_contributing_md(
+        charm_name, charm_display_name, github_repo, path_changelog
+    ):
+        template = pathlib.Path(
+            "/home/weii-wang/PycharmProjects/chrony-operator/CONTRIBUTING.tem.md"
+        ).read_text()
+        return (
+            template.replace("%%CHARM_NAME%%", charm_name)
+            .replace("%%CHARM_DISPLAY_NAME%%", charm_display_name)
+            .replace("%%GITHUB_REPO%%", github_repo)
+            .replace("%%PATH_CHANGELOG%%", path_changelog)
+        )
+
+    def _find_changelog(self):
+        for path in (
+            "./changelog.md",
+            "./CHANGELOG.md",
+            "./docs/changelog.md",
+            "./docs/CHANGELOG.md",
+        ):
+            if self.project.joinpath(path).exists():
+                return path
+        default_changelog = textwrap.dedent(
+            """\
+            # Changelog
+
+            All notable changes to this project will be documented in this file.
+            
+            The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
+            
+            Each revision is versioned by the date of the revision.
+            """
+        )
+        for path in ("./CHANGELOG.md", "./docs/changelog.md"):
+            changelog_file = self.project / path
+            if changelog_file.parent.exists():
+                changelog_file.write_text(default_changelog)
+                return path
+
     def _format(self):
         self._add_license(self.pyproject_file)
         self._add_license(self.tox_toml_file)
         self._add_license(self.charmcraft_file)
         tox_toml_fmt.run([str(self.tox_toml_file), "-n"])
-        pyproject_fmt.run([str(self.pyproject_file), "-n"])
         subprocess.check_call(
             ["/snap/bin/uv", "tool", "run", "tox", "-e", "fmt,lint-fix"],
             cwd=self.project,
         )
+        comment = textwrap.dedent(
+            """
+            # enable ruff linters:
+            #   S flake8-bandit
+            #   B flake8-bugbear
+            #   A flake8-builtins
+            # CPY flake8-copyright
+            # SIM flake8-simplify
+            #  TC flake8-type-checking
+            #   I isort
+            #   N pep8-naming
+            #   D pydocstyle
+            #   F Pyflakes
+            #  UP pyupgrade
+            # RUF Ruff-specific rules
+            # E/W pycodestyle
+            """
+        )
+        pyproject_content = self.pyproject_file.read_text().replace(
+            "\nlint.select", comment + "lint.select"
+        )
+
+        pyproject = tomlkit.loads(pyproject_content)
+        dependencies = pyproject["project"]["dependencies"]
+        pyproject["project"]["dependencies"] = tomlkit.loads(
+            tomli_w.dumps({"dependencies": dependencies}, indent=2)
+        )["dependencies"]
+        dependency_groups = pyproject["dependency-groups"]
+        pyproject["dependency-groups"] = tomlkit.loads(
+            tomli_w.dumps(dependency_groups, indent=2)
+        )
+        self.pyproject_file.write_text(tomlkit.dumps(pyproject))
+        pyproject_fmt.run([str(self.pyproject_file), "-n"])
+        charm_name = self.metadata["name"]
+        charm_display_name = self.metadata.get(
+            "title", self.metadata.get("display-name")
+        )
+        assert charm_display_name
+        if charm_display_name.lower().endswith("charm"):
+            charm_display_name = charm_display_name[:-6]
+        github_repo_url = subprocess.check_output(
+            ["git", "remote", "get-url", "origin"], cwd=self.project, encoding="utf-8"
+        ).strip()
+        github_repo = (
+            github_repo_url.split("github.com")[1]
+            .removeprefix(":")
+            .removeprefix("/")
+            .removesuffix(".git")
+        )
+        changelog_path = self._find_changelog()
+        contributing = self._render_contributing_md(
+            charm_name=charm_name,
+            charm_display_name=charm_display_name,
+            github_repo=github_repo,
+            path_changelog=changelog_path,
+        )
+        if self.conflicts:
+            contributing = contributing.replace(" --all-groups", "")
+        (self.project / "CONTRIBUTING.md").write_text(contributing)
 
     def _sync(self):
         cmd = ["/snap/bin/uv", "sync"]
@@ -749,12 +852,9 @@ class Uvify:
         self._format()
 
 
-project = "../wireguard-gateway-operator"
+project = pathlib.Path("../wordpress-k8s-operator/")
 Uvify.reset(project)
-u = Uvify(project)
-u.conflicts = [
-    [{"group": "integration-juju3"}, {"group": "integration"}, {"group": "lint"}],
-]
-u.migrate_uv()
-u.migrate_ruff()
-u.write()
+uv = Uvify(project, conflict_envs=["integration-juju3", "integration", "lint"])
+uv.migrate_uv()
+uv.migrate_ruff()
+uv.write()
