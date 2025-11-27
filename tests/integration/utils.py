@@ -74,6 +74,8 @@ def get_tls_certificates(
 ) -> cryptography.x509.Certificate:
     """Retrieve the TLS certificate from a specified TLS server."""
     context = ssl.create_default_context(cadata=cadata)
+    # Enforce secure TLS versions only (TLS 1.2 and above)
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     if not verify:
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
