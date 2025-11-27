@@ -74,16 +74,20 @@ def get_tls_certificates(
 ) -> cryptography.x509.Certificate:
     """Retrieve the TLS certificate from a specified TLS server."""
     context = ssl.create_default_context(cadata=cadata)
+    # Enforce secure TLS versions only (TLS 1.2 and above)
+    context.minimum_version = ssl.TLSVersion.TLSv1_2
     if not verify:
         context.check_hostname = False
         context.verify_mode = ssl.CERT_NONE
     server_name = host if server_name is None else server_name
-    with socket.create_connection((host, port)) as sock:
-        with context.wrap_socket(sock, server_hostname=server_name) as ssock:
-            cert = cryptography.x509.load_der_x509_certificate(
-                typing.cast(bytes, ssock.getpeercert(binary_form=True))
-            )
-            return cert
+    with (
+        socket.create_connection((host, port)) as sock,
+        context.wrap_socket(sock, server_hostname=server_name) as ssock,
+    ):
+        cert = cryptography.x509.load_der_x509_certificate(
+            typing.cast(bytes, ssock.getpeercert(binary_form=True))
+        )
+        return cert
 
 
 def get_sans(certificate: cryptography.x509.Certificate) -> list[str]:
