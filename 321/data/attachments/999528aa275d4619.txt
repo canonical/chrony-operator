@@ -1,0 +1,16 @@
+[33mWARNING [0m juju.client.connection:connection.py:927 unexpected facade SSHServer received from the controller
+[32mINFO    [0m pytest_operator.plugin:plugin.py:762 Adding model github-pr-40db2-lxd:test-charm-km4o on cloud localhost
+[33mWARNING [0m juju.client.connection:connection.py:927 unexpected facade SSHServer received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:927 unexpected facade SSHSession received from the controller
+[33mWARNING [0m juju.client.connection:connection.py:927 unexpected facade SSHTunneler received from the controller
+[32mINFO    [0m juju.model:model.py:2097 Deploying local:chrony-0
+[32mINFO    [0m juju.model:model.py:2957 Waiting for model:
+  chrony/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2957 Waiting for model:
+  chrony/0 [allocating] waiting: waiting for machine
+[32mINFO    [0m juju.model:model.py:2957 Waiting for model:
+  chrony/0 [executing] maintenance: installing chrony
+[32mINFO    [0m juju.model:model.py:2957 Waiting for model:
+  chrony/0 [idle] blocked: no time source configured
+[32mINFO    [0m juju.model:model.py:2957 Waiting for model:
+  chrony/0 [idle] blocked: no time source configured
