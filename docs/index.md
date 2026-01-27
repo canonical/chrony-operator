@@ -57,4 +57,5 @@ Thinking about using the Chrony Operator for your next project?
 1. [How-to](how-to)
   1. [Upgrade](how-to/upgrade.md)
 1. [Reference](reference)
+  1. [Charm architecture](reference/charm-architecture.md)
 1. [Explanation](explanation)
