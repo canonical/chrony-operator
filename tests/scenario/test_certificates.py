@@ -2,6 +2,7 @@
 # See LICENSE file for licensing details.
 
 """Scenario tests."""
+
 import copy
 import json
 import typing

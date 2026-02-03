@@ -13,10 +13,10 @@ import cryptography.hazmat.primitives.serialization
 import cryptography.x509
 
 __all__ = [
-    "TEST_CA_KEY",
     "TEST_CA_CERT",
-    "sign_csr",
+    "TEST_CA_KEY",
     "get_csr_common_name",
+    "sign_csr",
 ]
 
 
