@@ -17,7 +17,7 @@ jobs:
 
       with-uv: true
   integration-tests:
-    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
+    uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@cache
     secrets: inherit
     with:
       charmcraft-channel: latest/edge
