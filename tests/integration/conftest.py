@@ -30,9 +30,7 @@ async def chrony_app(
 async def self_signed_certificates_app(ops_test: OpsTest) -> juju.application.Application:
     """Build and deploy the self-signed-certificates charm in the testing model."""
     assert ops_test.model
-    charm = await ops_test.model.deploy(
-        "self-signed-certificates", channel="1/stable", base="ubuntu@24.04"
-    )
+    charm = await ops_test.model.deploy("self-signed-certificates")
     await ops_test.model.wait_for_idle(timeout=900)
     return charm
 
