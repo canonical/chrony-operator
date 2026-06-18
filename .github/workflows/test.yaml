@@ -8,6 +8,9 @@ on:
 jobs:
   unit-tests:
     uses: canonical/operator-workflows/.github/workflows/test.yaml@main
+    permissions:
+      contents: read
+      pull-requests: write
     secrets: inherit
     with:
       charmcraft-channel: latest/edge
@@ -17,6 +20,9 @@ jobs:
       with-uv: true
   integration-tests:
     uses: canonical/operator-workflows/.github/workflows/integration_test.yaml@main
+    permissions:
+      contents: read
+      packages: write
     secrets: inherit
     with:
       charmcraft-channel: latest/edge
@@ -29,4 +35,6 @@ jobs:
     if: ${{ !cancelled() && github.event_name == 'schedule' }}
     needs:
     - integration-tests
+    permissions:
+      contents: write
     uses: canonical/operator-workflows/.github/workflows/allure_report.yaml@main
