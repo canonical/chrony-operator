@@ -14,8 +14,6 @@ jobs:
     secrets: inherit
     with:
       charmcraft-channel: latest/edge
-      self-hosted-runner: true
-      self-hosted-runner-image: noble
       vale-style-check: false
       with-uv: true
   integration-tests:
@@ -29,8 +27,6 @@ jobs:
       provider: lxd
       juju-channel: 3.6/stable
       with-uv: true
-      self-hosted-runner: true
-      self-hosted-runner-image: noble
   allure-report:
     if: ${{ !cancelled() && github.event_name == 'schedule' }}
     needs:
